@@ -1,0 +1,13 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: monopatin-service
+
+# URL del servicio users_service
+users-service:
+  url: http://localhost:8081/api/users
+
+paradas-service:
+  url: http://localhost:8084/api/paradas

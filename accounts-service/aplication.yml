@@ -1,0 +1,10 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: account-service
+
+# URL del servicio users_service
+users-service:
+  url: http://localhost:8081/api/users

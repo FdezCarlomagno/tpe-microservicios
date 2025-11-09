@@ -1,0 +1,21 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: viajes-service
+
+users-service:
+  url: http://localhost:8081/api/users
+
+account-service:
+  url: http://localhost:8082/api/accounts
+
+monopatin-service:
+  url: http://localhost:8083/api/monopatines
+
+paradas-service:
+  url: http://localhost:8084/api/paradas
+
+
+
