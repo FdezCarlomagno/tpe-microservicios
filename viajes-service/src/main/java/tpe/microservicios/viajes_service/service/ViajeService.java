@@ -8,6 +8,7 @@ import tpe.microservicios.viajes_service.clients.AccountClient;
 import tpe.microservicios.viajes_service.clients.MonopatinClient;
 import tpe.microservicios.viajes_service.clients.ParadasClient;
 import tpe.microservicios.viajes_service.domains.Viaje;
+import tpe.microservicios.viajes_service.dto.ViajeDTO;
 import tpe.microservicios.viajes_service.repository.ViajeRepository;
 import tpe.microservicios.viajes_service.service.dto.request.FinalizarViajeDTO;
 import tpe.microservicios.viajes_service.service.dto.request.ViajeRequestDTO;
@@ -19,6 +20,7 @@ import tpe.microservicios.viajes_service.utils.EstadoViaje;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional
@@ -179,5 +181,8 @@ public class ViajeService {
             throw new RuntimeException("Viaje not found");
         }
         viajeRepository.deleteById(idViaje);
+    }
+    public List<ViajeDTO> getMonopatinUsado(){
+        return viajeRepository.reporteKilometrosPorMonopatin();
     }
 }

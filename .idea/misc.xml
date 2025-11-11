@@ -5,15 +5,8 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/users-service/pom.xml" />
-        <option value="$PROJECT_DIR$/reporte-service/pom.xml" />
-        <option value="$PROJECT_DIR$/paradas-service/pom.xml" />
-        <option value="$PROJECT_DIR$/monopatin-service/pom.xml" />
-        <option value="$PROJECT_DIR$/admin-service/pom.xml" />
-        <option value="$PROJECT_DIR$/accounts-service/pom.xml" />
-        <option value="$PROJECT_DIR$/viajes-service/pom.xml" />
       </list>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_23" project-jdk-name="openjdk-24" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_24" default="true" project-jdk-name="openjdk-24" project-jdk-type="JavaSDK" />
 </project>
