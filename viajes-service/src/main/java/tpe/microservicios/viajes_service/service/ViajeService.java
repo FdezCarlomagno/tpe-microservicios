@@ -1,5 +1,6 @@
 package tpe.microservicios.viajes_service.service;
 
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,15 +8,19 @@ import tpe.microservicios.viajes_service.clients.AccountClient;
 import tpe.microservicios.viajes_service.clients.MonopatinClient;
 import tpe.microservicios.viajes_service.clients.ParadasClient;
 import tpe.microservicios.viajes_service.domains.Viaje;
+import tpe.microservicios.viajes_service.dto.ViajeDTO;
 import tpe.microservicios.viajes_service.repository.ViajeRepository;
 import tpe.microservicios.viajes_service.service.dto.request.FinalizarViajeDTO;
 import tpe.microservicios.viajes_service.service.dto.request.ViajeRequestDTO;
 import tpe.microservicios.viajes_service.service.dto.response.AccountResponseDTO;
 import tpe.microservicios.viajes_service.service.dto.response.ParadaResponseDTO;
+import tpe.microservicios.viajes_service.service.dto.response.UserAccountResponseDTO;
 import tpe.microservicios.viajes_service.service.dto.response.ViajeResponseDTO;
 import tpe.microservicios.viajes_service.utils.EstadoViaje;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Transactional
@@ -29,43 +34,32 @@ public class ViajeService {
     private final TarifaService tarifaService;
 
     public ViajeResponseDTO addViaje(ViajeRequestDTO viajeRequestDTO) {
-        // Validamos existencia y estado de la cuenta
+        // Validamos existencia de todo
         var account = accountClient.getAccountById(viajeRequestDTO.idUserAccount());
         if (account == null) {
-            throw new IllegalArgumentException("User account not found with id: " + viajeRequestDTO.idUserAccount());
+            throw new RuntimeException("User account not found");
         }
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()) {
-            throw new IllegalStateException("Cuenta anulada, no puede iniciar viajes");
+        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
+            throw new RuntimeException("Cuenta anulada");
         }
 
-        // Validamos existencia del monopatín
         var monopatin = monopatinClient.getMonopatinById(viajeRequestDTO.idMonopatin());
         if (monopatin == null) {
-            throw new IllegalArgumentException("Monopatin not found with id: " + viajeRequestDTO.idMonopatin());
+            throw new RuntimeException("Monopatin not found");
         }
 
-        // TODO: Agregar validación de disponibilidad del monopatín
-        // if (!monopatin.isDisponible()) {
-        //     throw new IllegalStateException("Monopatin no disponible");
-        // }
-
-        // Validamos existencia de la parada de origen
         var parada = paradasClient.getParadaById(viajeRequestDTO.idParadaOrigen());
         if (parada == null) {
-            throw new IllegalArgumentException("Parada origen not found with id: " + viajeRequestDTO.idParadaOrigen());
+            throw new RuntimeException("Parada origen not found");
         }
 
-        Viaje v = viajeRepository.save(new Viaje(new ViajeRequestDTO(
-                account.idAccount(),
-                monopatin.id(),
-                parada.id()
-        )));
+        Viaje v = viajeRepository.save(new Viaje(new ViajeRequestDTO(account.idAccount(), monopatin.id(), parada.id())));
 
         return convertToViajeResponseDTO(v);
     }
 
-    private float calcularCostoViaje(Viaje viaje) {
+    private float calcularCostoViaje(Viaje viaje){
         LocalDateTime inicio = LocalDateTime.of(
                 viaje.getFechaViaje().fechaInicioViaje(),
                 viaje.getFechaViaje().horarioInicioViaje()
@@ -76,35 +70,25 @@ public class ViajeService {
                 viaje.getFechaViaje().horarioFinViaje()
         );
 
-        // Calculamos tiempo total de pausas (asumiendo 5 minutos por pausa)
-        long minutosEnPausa = viaje.getPausas().size() * 5L;
-
-        return tarifaService.calcularCosto(inicio, fin, minutosEnPausa);
+        return tarifaService.calcularCosto(inicio, fin, viaje.getPausas().size() * 5L);
     }
 
-    public ViajeResponseDTO pausarViaje(Long viajeId) {
-        // Buscamos el viaje
-        Viaje viaje = viajeRepository.findById(viajeId)
-                .orElseThrow(() -> new IllegalArgumentException("Viaje not found with id: " + viajeId));
-
-        // Validamos la cuenta del usuario
-        AccountResponseDTO account = accountClient.getAccountById(viaje.getIdUserAccount());
+    public ViajeResponseDTO pausarViaje(Long viajeId, float idAccount){
+        AccountResponseDTO account = accountClient.getAccountById(viajeId);
         if (account == null) {
-            throw new IllegalStateException("User account not found for viaje id: " + viajeId);
+            throw new RuntimeException("User account not found");
         }
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()) {
-            throw new IllegalStateException("Cuenta anulada, no puede pausar el viaje");
+        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
+            throw new RuntimeException("Cuenta anulada");
         }
 
-        // Validamos el estado del viaje
-        if (viaje.getEstado() == EstadoViaje.PAUSA) {
-            throw new IllegalStateException("El viaje ya está en pausa");
+        Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
+        if (viaje == null) {
+            throw new RuntimeException("Viaje not found");
         }
 
-        if (viaje.getEstado() == EstadoViaje.FINALIZADO) {
-            throw new IllegalStateException("No se puede pausar un viaje finalizado");
-        }
+        if(viaje.getEstado() == EstadoViaje.PAUSA) throw new RuntimeException("El viaje actual esta en pausa");
 
         viaje.pausar();
         viajeRepository.save(viaje);
@@ -112,25 +96,22 @@ public class ViajeService {
         return convertToViajeResponseDTO(viaje);
     }
 
-    public ViajeResponseDTO reanudarViaje(Long viajeId) {
-        // Buscamos el viaje
-        Viaje viaje = viajeRepository.findById(viajeId)
-                .orElseThrow(() -> new IllegalArgumentException("Viaje not found with id: " + viajeId));
-
-        // Validamos la cuenta del usuario
-        AccountResponseDTO account = accountClient.getAccountById(viaje.getIdUserAccount());
+    public ViajeResponseDTO reanudarViaje(Long viajeId, float idAccount){
+        AccountResponseDTO account = accountClient.getAccountById(viajeId);
         if (account == null) {
-            throw new IllegalStateException("User account not found for viaje id: " + viajeId);
+            throw new RuntimeException("User account not found");
         }
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()) {
-            throw new IllegalStateException("Cuenta anulada, no puede reanudar el viaje");
+        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
+            throw new RuntimeException("Cuenta anulada");
         }
 
-        // Validamos el estado del viaje
-        if (viaje.getEstado() != EstadoViaje.PAUSA) {
-            throw new IllegalStateException("El viaje no está en pausa, estado actual: " + viaje.getEstado());
+        Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
+        if (viaje == null) {
+            throw new RuntimeException("Viaje not found");
         }
+
+        if(viaje.getEstado() != EstadoViaje.PAUSA) throw new RuntimeException("El viaje actual no esta en pausa");
 
         viaje.reanudarUltimaPausa();
         viajeRepository.save(viaje);
@@ -138,70 +119,46 @@ public class ViajeService {
         return convertToViajeResponseDTO(viaje);
     }
 
-    public ViajeResponseDTO getViajeById(Long viajeId) {
-        Viaje v = viajeRepository.findById(viajeId)
-                .orElseThrow(() -> new IllegalArgumentException("Viaje not found with id: " + viajeId));
+    public ViajeResponseDTO getViajeById(Long viajeId){
+       Viaje v = viajeRepository.findById(viajeId).orElse(null);
 
-        return convertToViajeResponseDTO(v);
+       if (v == null){
+           throw new RuntimeException("Viaje not found");
+       }
+
+       return convertToViajeResponseDTO(v);
     }
 
     public ViajeResponseDTO finalizarViaje(Long viajeId, FinalizarViajeDTO viajeDTO) {
-        // Buscamos el viaje
-        Viaje viaje = viajeRepository.findById(viajeId)
-                .orElseThrow(() -> new IllegalArgumentException("Viaje not found with id: " + viajeId));
-
-        // Validamos el estado del viaje
-        if (viaje.getEstado() == EstadoViaje.FINALIZADO) {
-            throw new IllegalStateException("El viaje ya está finalizado");
-        }
-
-        // Si está en pausa, primero cerramos la pausa
-        if (viaje.getEstado() == EstadoViaje.PAUSA) {
-            viaje.reanudarUltimaPausa();
-        }
-
-        // Validamos la cuenta del usuario (usamos el ID del viaje, no del DTO)
-        AccountResponseDTO account = accountClient.getAccountById(viaje.getIdUserAccount());
+        AccountResponseDTO account = accountClient.getAccountById(viajeDTO.idUserAccount());
         if (account == null) {
-            throw new IllegalStateException("User account not found for viaje id: " + viajeId);
+            throw new RuntimeException("User account not found");
         }
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()) {
-            throw new IllegalStateException("Cuenta anulada, no puede finalizar el viaje");
+        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
+            throw new RuntimeException("Cuenta anulada");
         }
 
-        // Validamos la parada de destino
         ParadaResponseDTO parada = paradasClient.getParadaById(viajeDTO.idParadaDestino());
         if (parada == null) {
-            throw new IllegalArgumentException("Parada destino not found with id: " + viajeDTO.idParadaDestino());
+            throw new RuntimeException("Parada destino not found");
         }
 
-        // Validamos que los kilómetros sean positivos
-        if (viajeDTO.kilometros() <= 0) {
-            throw new IllegalArgumentException("Los kilómetros deben ser mayores a 0");
+        Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
+        if (viaje == null) {
+            throw new RuntimeException("Viaje not found");
         }
 
-        // Finalizamos el viaje
         viaje.finalizar(viajeDTO.idParadaDestino(), viajeDTO.kilometros(), 0);
-
-        // Calculamos el costo
         float costo = this.calcularCostoViaje(viaje);
         viaje.setCostoViaje(costo);
 
-        // Validamos saldo suficiente
-        if (account.saldo() < costo) {
-            // Revertimos el estado si no hay saldo
-            throw new IllegalStateException(
-                    String.format("Saldo insuficiente. Costo: %.2f, Saldo disponible: %.2f",
-                            costo, account.saldo())
-            );
+        if(account.saldo() < costo){
+            throw new RuntimeException("Saldo insuficiente para pagar el viaje");
         }
 
-        // Actualizamos el saldo (CORRECCIÓN: usar idUserAccount del viaje, no del DTO)
-        float nuevoSaldo = account.saldo() - costo;
-        accountClient.updateSaldo(viaje.getIdUserAccount(), nuevoSaldo);
+        accountClient.updateSaldo(viajeDTO.idUserAccount(), account.saldo() - costo);
 
-        // Guardamos el viaje finalizado
         viajeRepository.save(viaje);
 
         return convertToViajeResponseDTO(viaje);
@@ -219,10 +176,13 @@ public class ViajeService {
         );
     }
 
-    public void deleteViaje(Long idViaje) {
-        if (!viajeRepository.existsById(idViaje)) {
-            throw new IllegalArgumentException("Viaje not found with id: " + idViaje);
+    public void deleteViaje(Long idViaje){
+        if(viajeRepository.findById(idViaje).isEmpty()){
+            throw new RuntimeException("Viaje not found");
         }
         viajeRepository.deleteById(idViaje);
+    }
+    public List<ViajeDTO> getMonopatinUsado(){
+        return viajeRepository.reporteKilometrosPorMonopatin();
     }
 }
