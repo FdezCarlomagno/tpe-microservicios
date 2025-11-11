@@ -12,6 +12,7 @@ import tpe.microservicios.monopatin_service.service.dto.response.MonopatinRespon
 import tpe.microservicios.monopatin_service.service.dto.response.ParadaResponseDTO;
 import tpe.microservicios.monopatin_service.utils.EstadoMonopatin;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -129,7 +130,13 @@ public class MonopatinService {
     }
 
     public List<MonopatinResponseDTO> findAllDisponibles(){
-        return monopatinRepository.findAllDisponibles();
+        List<Monopatin>monopatin= monopatinRepository.findAllDisponibles();
+        List<MonopatinResponseDTO>retorno= new ArrayList<>();
+        for(Monopatin m:monopatin){
+            retorno.add(new MonopatinResponseDTO(m.getId(), paradaClient.getParadaById(m.getIdParada()).nombreParada(), m.getDisponible()));
+
+        }
+        return retorno;
     }
 
     public List<MonopatinResponseDTO> findByParada(Long idParada){

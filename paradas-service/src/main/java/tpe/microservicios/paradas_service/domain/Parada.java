@@ -28,6 +28,7 @@ public class Parada {
     @Column
     private String descripcionParada;
 
+    @ElementCollection
     @Column
     private String direccionParada;
 
@@ -45,8 +46,10 @@ public class Parada {
         this.idMonopatines = parada.idMonopatines();
     }
 
+
     public ParadaResponseDTO toDTO(){
         return new ParadaResponseDTO(
+                this.id,
                 this.nombreParada,
                 this.descripcionParada,
                 this.direccionParada,
