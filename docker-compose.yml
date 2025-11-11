@@ -1,0 +1,101 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: tp_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  users-service:
+    build:
+      context: ./users-service
+      dockerfile: Dockerfile
+    image: tp_users_service
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/users_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+
+  accounts-service:
+    build:
+      context: ./accounts-service
+      dockerfile: Dockerfile
+    image: tp_accounts_service
+    depends_on:
+      - mysql
+      - users-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/accounts_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
+      SERVER_PORT: 8082
+    ports:
+      - "8082:8082"
+
+  monopatin-service:
+    build:
+      context: ./monopatin-service
+      dockerfile: Dockerfile
+    image: tp_monopatin_service
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/monopatin_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
+      SERVER_PORT: 8083
+    ports:
+      - "8083:8083"
+
+  paradas-service:
+    build:
+      context: ./paradas-service
+      dockerfile: Dockerfile
+    image: tp_paradas_service
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/paradas_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
+      SERVER_PORT: 8084
+    ports:
+      - "8084:8084"
+
+  viajes-service:
+    build:
+      context: ./viajes-service
+      dockerfile: Dockerfile
+    image: tp_viajes_service
+    depends_on:
+      - mysql
+      - users-service
+      - accounts-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/viajes_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpass
+      SERVER_PORT: 8086
+    ports:
+      - "8086:8086"
+
+volumes:
+  mysql-data:
