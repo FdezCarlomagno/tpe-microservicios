@@ -28,14 +28,18 @@ public class Parada {
     @Column
     private String descripcionParada;
 
-    @ElementCollection
     @Column
     private String direccionParada;
 
     /**
      * En una parada pueden haber muchos monopatines?
      * */
-    @Column
+    @ElementCollection
+    @CollectionTable(
+            name = "parada_monopatines",
+            joinColumns = @JoinColumn(name = "parada_id")
+    )
+    @Column(name = "monopatin_id")
     private List<Long> idMonopatines = new ArrayList<>();
 
     public Parada(ParadaRequestDTO parada) {
