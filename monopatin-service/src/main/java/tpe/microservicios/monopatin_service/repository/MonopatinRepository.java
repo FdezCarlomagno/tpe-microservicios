@@ -10,6 +10,6 @@ import java.util.List;
 
 public interface MonopatinRepository extends JpaRepository<Monopatin, Long> {
 
-    @Query("SELECT m.id, m.idParada, m.disponible FROM Monopatin m WHERE m.estado=ACTIVADO")
+    @Query("SELECT m FROM Monopatin m WHERE m.estado=ACTIVADO")
     List<Monopatin> findAllDisponibles();
 }

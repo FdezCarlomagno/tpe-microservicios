@@ -34,12 +34,12 @@ public class ViajeController {
 
     @PutMapping("/{id}/pausar")
     public ResponseEntity<ViajeResponseDTO> pausarViaje(@PathVariable("id") Long idViaje, @RequestBody PausarViajeDTO pausarViajeDTO){
-        return ResponseEntity.ok(viajeService.pausarViaje(idViaje, pausarViajeDTO.idAccount()));
+        return ResponseEntity.ok(viajeService.pausarViaje(idViaje));
     }
 
     @PutMapping("/{id}/reanudar")
     public ResponseEntity<ViajeResponseDTO> reanudarViaje(@PathVariable("id") Long idViaje, @RequestBody PausarViajeDTO pausarViajeDTO){
-        return ResponseEntity.ok(viajeService.reanudarViaje(idViaje, pausarViajeDTO.idAccount()));
+        return ResponseEntity.ok(viajeService.reanudarViaje(idViaje));
     }
 
     @DeleteMapping("/{id}")
