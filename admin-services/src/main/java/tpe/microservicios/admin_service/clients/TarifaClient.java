@@ -2,9 +2,7 @@
 package tpe.microservicios.admin_service.clients;
 
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import tpe.microservicios.admin_service.service.dto.request.TarifaRequestDTO;
 
 @FeignClient(name = "tarifa-service", url = "http://localhost:8081/api/tarifas")

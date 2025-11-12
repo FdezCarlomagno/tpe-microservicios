@@ -2,13 +2,16 @@ package tpe.microservicios.admin_service.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import tpe.microservicios.admin_service.clients.MonopatinClient;
-import tpe.microservicios.admin_service.clients.ParadaClient;
-import tpe.microservicios.admin_service.clients.TarifaClient;
-import tpe.microservicios.admin_service.clients.UserClient;
-import tpe.microservicios.admin_service.service.dto.request.*;
-import tpe.microservicios.admin_service.service.dto.response.*;
+import tpe.microservicios.admin_service.clients.*;
+import tpe.microservicios.admin_service.service.dto.request.MonopatinRequestDTO;
+import tpe.microservicios.admin_service.service.dto.request.ParadaRequestDTO;
+import tpe.microservicios.admin_service.service.dto.request.TarifaRequestDTO;
+import tpe.microservicios.admin_service.service.dto.response.AccountResponseDTO;
+import tpe.microservicios.admin_service.service.dto.response.MonopatinResponseDTO;
+import tpe.microservicios.admin_service.service.dto.response.ParadaResponseDTO;
+
 
 import java.util.List;
 
@@ -16,30 +19,42 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class AdministradorService {
-
     private final MonopatinClient monopatinClient;
+    private final AccountClient accountClient;
+    private final ViajesClient  viajesClient;
     private final ParadaClient paradaClient;
-    private final UserClient cuentaClient; // ← Cliente para anular cuentas
     private final TarifaClient tarifaClient;
 
-    // ==================== MONOPATINES ====================
-
-    public List<MonopatinResponseDTO> listarMonopatines() {
-        return monopatinClient.listarMonopatines();
+    public List<MonopatinResponseDTO> listarMonopatines(){
+        return  monopatinClient.listarMonopatines();
     }
-
-    public MonopatinResponseDTO crearMonopatin(MonopatinRequestDTO dto) {
-        return monopatinClient.crear(dto);
+    public MonopatinResponseDTO crearMonopatin(MonopatinRequestDTO monopatin){
+        return monopatinClient.crear(monopatin);
     }
-
-    public MonopatinResponseDTO actualizarMonopatin(Long id, MonopatinRequestDTO dto) {
-        return monopatinClient.actualizar(id, dto);
+    public MonopatinResponseDTO actualizarMonopatin(Long id, MonopatinRequestDTO monopatin){
+        return monopatinClient.actualizar(id, monopatin);
     }
-
-    public void eliminarMonopatin(Long id) {
+    public void eliminarMonopatin(Long id){
         monopatinClient.eliminar(id);
     }
 
+    public AccountResponseDTO anularCuenta(Long idCuenta){
+        var account = accountClient.getAccount(idCuenta);
+
+        if(account == null){
+            throw new RuntimeException("No se encontro la cuenta");
+        }
+
+        return accountClient.anularCuenta(account.idAccount());
+    }
+
+    public List<MonopatinResponseDTO> getMonopatinesConMasViajes(int anio, long minViajes){
+        return viajesClient.getMonopatinesConMasViajes(anio, minViajes);
+    }
+
+    public Float getTotalFacturadoViajes(int anio, int mesInicio, int mesFin){
+        return viajesClient.getTotalFacturado(anio, mesInicio, mesFin);
+    }
     // ==================== PARADAS ====================
 
     public List<ParadaResponseDTO> listarParadas() {
@@ -66,11 +81,4 @@ public class AdministradorService {
         tarifaClient.actualizarTarifa(tipo, request);
     }
 
-
-
-    // ==================== CUENTAS ====================
-
-    public void anularCuenta(Long cuentaId) {
-        cuentaClient.anular(cuentaId);
-    }
 }

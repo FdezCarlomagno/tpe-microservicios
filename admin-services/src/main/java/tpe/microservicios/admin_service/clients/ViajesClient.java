@@ -11,14 +11,15 @@ import java.util.List;
 public interface ViajesClient {
 
     @GetMapping("/monopatines/mas-viajes")
-    List<MonopatinResponseDTO> getMonopatinesConMasViajes(@RequestParam int anio, @RequestParam long minViajes);
+    List<MonopatinResponseDTO> getMonopatinesConMasViajes(
+            @RequestParam("anio") int anio,
+            @RequestParam("minViajes") long minViajes
+    );
 
     @GetMapping("/reportes/total-facturado")
     Float getTotalFacturado(
-            @RequestParam int anio,
-            @RequestParam int mesInicio,
-            @RequestParam int mesFin
+            @RequestParam("anio") int anio,
+            @RequestParam("mesInicio") int mesInicio,
+            @RequestParam("mesFin") int mesFin
     );
-
-
 }

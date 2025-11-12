@@ -12,7 +12,6 @@ public interface AccountClient {
     @PutMapping("/{id}/anular")
     AccountResponseDTO anularCuenta(@PathVariable("id") Long idAccount);
 
-    @GetMapping
+    @GetMapping("/{id}")
     AccountResponseDTO getAccount(@PathVariable("id") Long idAccount);
-
 }
