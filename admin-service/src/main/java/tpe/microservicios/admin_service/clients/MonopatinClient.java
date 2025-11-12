@@ -7,15 +7,18 @@ import tpe.microservicios.admin_service.service.dto.response.MonopatinResponseDT
 
 import java.util.List;
 
-@FeignClient(name="monopatin-service", url = "http://localhost:8083/api/monopatines")
+@FeignClient(name = "monopatin-service", url = "http://localhost:8083/api/monopatines")
 public interface MonopatinClient {
+
     @GetMapping
-    List<MonopatinResponseDTO>listarMonopatines();
+    List<MonopatinResponseDTO> listarMonopatines();
+
     @PostMapping
     MonopatinResponseDTO crear(@RequestBody MonopatinRequestDTO dto);
-    @PutMapping("/{id}")
-    MonopatinResponseDTO actualizar(@PathVariable Long id, @RequestBody MonopatinRequestDTO dto);
-    @DeleteMapping("/{id}")
-    void eliminar(@PathVariable Long id);
 
+    @PutMapping("/{id}")
+    MonopatinResponseDTO actualizar(@PathVariable("id") Long id, @RequestBody MonopatinRequestDTO dto);
+
+    @DeleteMapping("/{id}")
+    void eliminar(@PathVariable("id") Long id);
 }
