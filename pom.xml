@@ -3,56 +3,55 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
-
-    <!-- El proyecto raíz hereda de Spring Boot -->
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
-        <relativePath/> <!-- Busca en repositorio central -->
-    </parent>
 
     <groupId>tpe.microservicios</groupId>
     <artifactId>tpe-microservicios</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-
     <name>TPE Microservicios</name>
-    <description>Proyecto multi-módulo para arquitectura de microservicios (Spring Boot + Docker)</description>
+    <description>Proyecto multi-módulo para arquitectura de microservicios</description>
 
     <properties>
         <java.version>17</java.version>
-        <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <!-- VERSIONES CORRECTAS -->
+        <spring-boot.version>3.2.5</spring-boot.version>
+        <spring-cloud.version>2023.0.3</spring-cloud.version>
     </properties>
 
-    <!-- Importamos el BOM de Spring Cloud (para OpenFeign, etc.) -->
+    <!-- IMPORTAR VERSIONES DE SPRING BOOT -->
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2025.0.0</version>
+                <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <!-- Listado de módulos -->
+    <!-- MÓDULOS -->
     <modules>
         <module>users-service</module>
         <module>accounts-service</module>
         <module>monopatin-service</module>
         <module>paradas-service</module>
         <module>viajes-service</module>
+        <module>admin-service</module> <!-- ¡AGREGA admin-service! -->
     </modules>
 
     <build>
         <pluginManagement>
             <plugins>
-                <!-- Plugin de compilación -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -62,16 +61,12 @@
                         <target>${java.version}</target>
                     </configuration>
                 </plugin>
-
-                <!-- Plugin de Spring Boot -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
-
 </project>
-
-

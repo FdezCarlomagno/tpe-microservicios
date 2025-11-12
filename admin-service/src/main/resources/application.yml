@@ -1,0 +1,11 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: admin-service
+
+# URL del servicio users_service
+
+monopatin-service:
+  url: http://localhost:8083/api/monopatines
