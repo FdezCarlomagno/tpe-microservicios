@@ -12,15 +12,14 @@ import tpe.microservicios.viajes_service.dto.ViajeDTO;
 import tpe.microservicios.viajes_service.repository.ViajeRepository;
 import tpe.microservicios.viajes_service.service.dto.request.FinalizarViajeDTO;
 import tpe.microservicios.viajes_service.service.dto.request.ViajeRequestDTO;
-import tpe.microservicios.viajes_service.service.dto.response.AccountResponseDTO;
-import tpe.microservicios.viajes_service.service.dto.response.ParadaResponseDTO;
-import tpe.microservicios.viajes_service.service.dto.response.UserAccountResponseDTO;
-import tpe.microservicios.viajes_service.service.dto.response.ViajeResponseDTO;
+import tpe.microservicios.viajes_service.service.dto.response.*;
 import tpe.microservicios.viajes_service.utils.EstadoViaje;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional
@@ -185,4 +184,51 @@ public class ViajeService {
     public List<ViajeDTO> getMonopatinUsado(){
         return viajeRepository.reporteKilometrosPorMonopatin();
     }
+
+    public List<MonopatinResponseDTO> getMonopatinesConMasDeXViajesEnAnio(int anio, long minViajes) {
+        return viajeRepository.findMonopatinesConMasDeXViajesEnAnio(anio, minViajes).stream().map(idMonopatin -> {
+            var m = monopatinClient.getMonopatinById(idMonopatin);
+            if(m == null){ return null;}
+
+            return new MonopatinResponseDTO(
+                 idMonopatin,
+                 m.parada(),
+                    m.disponible()
+            );
+        }).filter(Objects::nonNull).toList();
+    }
+
+    public Float getTotalFacturadoEnRangoMeses(int anio, int mesInicio, int mesFin) {
+        Float total = viajeRepository.getTotalFacturadoEnRangoMeses(anio, mesInicio, mesFin);
+        return total != null ? total : 0f;
+    }
+
+    public List<UserUsageDTO> getUsuariosMasActivosPorTipo(
+            LocalDate fechaInicio,
+            LocalDate fechaFin,
+            String tipoUsuario) {
+
+        List<Object[]> resultados = viajeRepository.getUsuariosMasActivos(fechaInicio, fechaFin);
+
+        List<UserUsageDTO> lista = new ArrayList<>();
+
+        for (Object[] row : resultados) {
+            Long idUserAccount = (Long) row[0];
+            Long totalViajes = (Long) row[1];
+
+            var account = accountClient.getAccountById(idUserAccount);
+            if (account != null && account.type().toString().equalsIgnoreCase(tipoUsuario)) {
+                lista.add(new UserUsageDTO(
+                        idUserAccount,
+                        account.type().toString(),
+                        totalViajes
+                ));
+            }
+        }
+
+        return lista;
+    }
+
+
+
 }
