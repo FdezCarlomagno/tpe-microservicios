@@ -10,7 +10,7 @@
 	</parent>
 
 	<groupId>tpe.microservicios</groupId>
-	<artifactId>reporte-service</artifactId>
+	<artifactId>mantenimiento-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>reporte-service</name>
 	<description>Reporte service</description>
