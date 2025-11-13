@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import tpe.microservicios.viajes_service.domains.Viaje;
 import tpe.microservicios.viajes_service.dto.ViajeDTO;
+import tpe.microservicios.viajes_service.service.dto.response.KmRecorridosDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -47,4 +48,13 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
     ORDER BY totalViajes DESC
 """)
     List<Object[]> getUsuariosMasActivos(LocalDate fechaInicio, LocalDate fechaFin);
+
+    @Query("""
+    SELECT SUM(v.kilometros)
+    FROM Viaje v
+    WHERE v.idUserAccount IN :idsUsuarios
+      AND v.fechaViaje.fechaInicioViaje BETWEEN :fechaInicio AND :fechaFin
+      AND v.estado = 'FINALIZADO'
+""")
+    KmRecorridosDTO getUsoTotalPorUsuariosEnPeriodo(List<Long> idsUsuarios, LocalDate fechaInicio, LocalDate fechaFin);
 }

@@ -208,6 +208,25 @@ public class ViajeService {
         return convertToViajeResponseDTO(viaje);
     }
 
+    public KmRecorridosDTO getUsoMonopatines(Long idUserAccount, LocalDate fechaInicio, LocalDate fechaFin, boolean incluirRelacionados) {
+        List<Long> idsUsuarios = new ArrayList<>();
+        idsUsuarios.add(idUserAccount);
+
+        if (incluirRelacionados) {
+            // obtenemos los usuarios vinculados a la cuenta
+            AccountResponseDTO cuenta = accountClient.getAccountById(idUserAccount);
+            List<UserAccountResponseDTO> relacionados = accountClient.getUsersFromAccount(cuenta.getId());
+            relacionados.forEach(u -> idsUsuarios.add(u.getId()));
+        }
+
+        Float km = viajeRepository.getUsoTotalPorUsuariosEnPeriodo(idsUsuarios, fechaInicio, fechaFin)
+
+        return new KmRecorridosDTO(
+                km,
+                relacionados,
+                );
+    }
+
     private ViajeResponseDTO convertToViajeResponseDTO(Viaje viaje) {
         return new ViajeResponseDTO(
                 viaje.getId(),
@@ -230,3 +249,5 @@ public class ViajeService {
         return viajeRepository.reporteKilometrosPorMonopatin();
     }
 }
+
+

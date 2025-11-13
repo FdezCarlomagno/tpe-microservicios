@@ -9,6 +9,7 @@ import tpe.microservicios.viajes_service.service.ViajeService;
 import tpe.microservicios.viajes_service.service.dto.request.FinalizarViajeDTO;
 import tpe.microservicios.viajes_service.service.dto.request.PausarViajeDTO;
 import tpe.microservicios.viajes_service.service.dto.request.ViajeRequestDTO;
+import tpe.microservicios.viajes_service.service.dto.response.KmRecorridosDTO;
 import tpe.microservicios.viajes_service.service.dto.response.MonopatinResponseDTO;
 import tpe.microservicios.viajes_service.service.dto.response.UserUsageDTO;
 import tpe.microservicios.viajes_service.service.dto.response.ViajeResponseDTO;
@@ -78,5 +79,16 @@ public class ViajeController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin
     ) {
         return ResponseEntity.ok(viajeService.getUsuariosMasActivosPorTipo(fechaInicio, fechaFin, tipoUsuario));
+    }
+
+
+    @GetMapping("/reportes/uso")
+    public ResponseEntity<KmRecorridosDTO> getUsoMonopatines(
+            @RequestParam Long idUserAccount,
+            @RequestParam LocalDate fechaInicio,
+            @RequestParam LocalDate fechaFin,
+            @RequestParam(defaultValue = "false") boolean incluirRelacionados
+    ){
+        return ResponseEntity.ok(viajeService.getUsoMonopatines(idUserAccount, fechaInicio, fechaFin, incluirRelacionados));
     }
 }
