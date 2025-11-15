@@ -14,8 +14,8 @@ public interface MonopatinClient {
     @PostMapping
     MonopatinResponseDTO crear(@RequestBody MonopatinRequestDTO dto);
     @PutMapping("/{id}")
-    MonopatinResponseDTO actualizar(@PathVariable Long id, @RequestBody MonopatinRequestDTO dto);
+    MonopatinResponseDTO actualizar(@PathVariable("id") Long id, @RequestBody MonopatinRequestDTO dto);
     @DeleteMapping("/{id}")
-    void eliminar(@PathVariable Long id);
+    void eliminar(@PathVariable("id") Long id);
 
 }

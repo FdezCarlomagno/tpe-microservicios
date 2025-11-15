@@ -8,6 +8,7 @@ import tpe.microservicios.viajes_service.service.dto.response.KmRecorridosDTO;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface ViajeRepository extends JpaRepository<Viaje, Long> {
 
@@ -56,5 +57,5 @@ public interface ViajeRepository extends JpaRepository<Viaje, Long> {
       AND v.fechaViaje.fechaInicioViaje BETWEEN :fechaInicio AND :fechaFin
       AND v.estado = 'FINALIZADO'
 """)
-    KmRecorridosDTO getUsoTotalPorUsuariosEnPeriodo(List<Long> idsUsuarios, LocalDate fechaInicio, LocalDate fechaFin);
+    Float getUsoTotalPorUsuariosEnPeriodo(Set<Long> idsUsuarios, LocalDate fechaInicio, LocalDate fechaFin);
 }

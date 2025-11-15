@@ -2,7 +2,7 @@ package tpe.microservicios.reporte_service.service;
 
 
 import org.springframework.stereotype.Service;
-import tpe.microservicios.reporte_service.clients.ParadaClient;
+import tpe.microservicios.reporte_service.clients.ViajesClient;
 import tpe.microservicios.reporte_service.dto.ReporteMonopatinesUsadosDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
@@ -11,10 +11,10 @@ import java.util.List;
 public class ReporteService {
 
     @Autowired
-    private ParadaClient paradaClient;
+    private ViajesClient viajesClient;
 
     public List<ReporteMonopatinesUsadosDTO> getMonopatinUsado(){
-        List<ReporteMonopatinesUsadosDTO> reportUsadosMonopatin = paradaClient.getMonopatinesUsados();
+        List<ReporteMonopatinesUsadosDTO> reportUsadosMonopatin = viajesClient.getMonopatinesUsados();
         return reportUsadosMonopatin;
     }
 }

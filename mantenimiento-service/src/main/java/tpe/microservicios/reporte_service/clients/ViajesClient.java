@@ -7,8 +7,8 @@ import tpe.microservicios.reporte_service.dto.ReporteMonopatinesUsadosDTO;
 
 import java.util.List;
 
-@FeignClient(name = "viajes-service", url = "http://localhost:8087/api/viajes")
-public interface ParadaClient {
+@FeignClient(name = "viajes-service", url = "http://localhost:8086/api/viajes")
+public interface ViajesClient {
     @GetMapping("/monopatines/usados")
     List<ReporteMonopatinesUsadosDTO> getMonopatinesUsados();
 }

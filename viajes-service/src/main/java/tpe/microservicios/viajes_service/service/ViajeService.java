@@ -17,9 +17,7 @@ import tpe.microservicios.viajes_service.utils.EstadoViaje;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Transactional
@@ -209,23 +207,30 @@ public class ViajeService {
     }
 
     public KmRecorridosDTO getUsoMonopatines(Long idUserAccount, LocalDate fechaInicio, LocalDate fechaFin, boolean incluirRelacionados) {
-        List<Long> idsUsuarios = new ArrayList<>();
+
+        Set<Long> idsUsuarios = new HashSet<>();
         idsUsuarios.add(idUserAccount);
 
+        List<UserAccountResponseDTO> relacionados = new ArrayList<>();
+
         if (incluirRelacionados) {
-            // obtenemos los usuarios vinculados a la cuenta
             AccountResponseDTO cuenta = accountClient.getAccountById(idUserAccount);
-            List<UserAccountResponseDTO> relacionados = accountClient.getUsersFromAccount(cuenta.getId());
-            relacionados.forEach(u -> idsUsuarios.add(u.getId()));
+
+            if (cuenta != null) {
+                relacionados = accountClient.getUsersFromAccount(cuenta.idAccount());
+                relacionados.forEach(u -> idsUsuarios.add(u.id()));
+            }
         }
 
-        Float km = viajeRepository.getUsoTotalPorUsuariosEnPeriodo(idsUsuarios, fechaInicio, fechaFin)
+        Float km = viajeRepository.getUsoTotalPorUsuariosEnPeriodo(idsUsuarios, fechaInicio, fechaFin);
+        km = (km == null) ? 0f : km;
 
         return new KmRecorridosDTO(
                 km,
-                relacionados,
-                );
+                relacionados
+        );
     }
+
 
     private ViajeResponseDTO convertToViajeResponseDTO(Viaje viaje) {
         return new ViajeResponseDTO(

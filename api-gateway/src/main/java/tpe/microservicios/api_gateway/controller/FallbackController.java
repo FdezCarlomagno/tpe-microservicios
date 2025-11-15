@@ -59,6 +59,14 @@ public class FallbackController {
     }
 
     /**
+     * Fallback para el servicio de viajes
+     */
+    @GetMapping("/viajes")
+    public ResponseEntity<Map<String, Object>> viajesFallback() {
+        return buildFallbackResponse("Viajes Service");
+    }
+
+    /**
      * Fallback para el servicio de reportes
      */
     @GetMapping("/reportes")

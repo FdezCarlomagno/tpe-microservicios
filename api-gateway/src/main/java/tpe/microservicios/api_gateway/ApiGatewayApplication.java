@@ -33,6 +33,7 @@ public class ApiGatewayApplication {
         System.out.println("   → Accounts:   http://localhost:8080/api/accounts");
         System.out.println("   → Monopatines: http://localhost:8080/api/monopatines");
         System.out.println("   → Paradas:    http://localhost:8080/api/paradas");
+        System.out.println("   → Viajes:    http://localhost:8080/api/viajes");
         System.out.println("   → Admin:      http://localhost:8080/api/admin");
         System.out.println("   → Reportes:   http://localhost:8080/api/reportes");
         System.out.println("==============================================");

@@ -23,7 +23,6 @@ public class AdministradorService {
     private final AccountClient accountClient;
     private final ViajesClient  viajesClient;
     private final ParadaClient paradaClient;
-    private final TarifaClient tarifaClient;
 
     public List<MonopatinResponseDTO> listarMonopatines(){
         return  monopatinClient.listarMonopatines();
@@ -78,7 +77,7 @@ public class AdministradorService {
     public void actualizarTarifa(String tipo, Float nuevoValor) {
         var request = new TarifaRequestDTO();
         request.setValor(nuevoValor);
-        tarifaClient.actualizarTarifa(tipo, request);
+        viajesClient.actualizarTarifa(tipo, request);
     }
 
 }

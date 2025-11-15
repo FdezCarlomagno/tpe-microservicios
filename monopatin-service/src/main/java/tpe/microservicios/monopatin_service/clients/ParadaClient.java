@@ -9,5 +9,5 @@ import tpe.microservicios.monopatin_service.service.dto.response.ParadaResponseD
 public interface ParadaClient {
 
     @GetMapping("/{id}")
-    ParadaResponseDTO getParadaById(@PathVariable Long id);
+    ParadaResponseDTO getParadaById(@PathVariable("id") Long id);
 }
