@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tpe.microservicios.paradas_service.clients.MonopatinClient;
 import tpe.microservicios.paradas_service.domain.Parada;
+import tpe.microservicios.paradas_service.exceptions.BadRequestException;
+import tpe.microservicios.paradas_service.exceptions.InternalServerErrorException;
+import tpe.microservicios.paradas_service.exceptions.NotFoundException;
 import tpe.microservicios.paradas_service.repository.ParadasRepository;
 import tpe.microservicios.paradas_service.service.dto.request.ParadaRequestDTO;
 import tpe.microservicios.paradas_service.service.dto.response.MonopatinParadaDTO;
@@ -18,11 +21,10 @@ import java.util.Objects;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(dontRollbackOn = NotFoundException.class)
 @RequiredArgsConstructor
 public class ParadasService {
 
-    // CORRECCIÓN: Hacer los campos final para inyección correcta con @RequiredArgsConstructor
     private final ParadasRepository paradasRepository;
     private final MonopatinClient monopatinClient;
 
@@ -45,26 +47,26 @@ public class ParadasService {
 
     public ParadaResponseDTO getParadaById(Long id) {
         if (id == null || id <= 0) {
-            throw new IllegalArgumentException("ID de parada inválido: " + id);
+            throw new BadRequestException("ID de parada inválido: " + id);
         }
 
         return paradasRepository.findById(id)
                 .map(this::convertToDTO)
-                .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada con id: " + id));
+                .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + id));
     }
 
     public ParadaResponseDTO registrarParada(ParadaRequestDTO parada) {
         if (parada == null) {
-            throw new IllegalArgumentException("ParadaRequestDTO no puede ser null");
+            throw new BadRequestException("ParadaRequestDTO no puede ser null");
         }
 
         // Validar datos requeridos
         if (parada.nombreParada() == null || parada.nombreParada().trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de la parada es obligatorio");
+            throw new BadRequestException("El nombre de la parada es obligatorio");
         }
 
         if (parada.direccionParada() == null || parada.direccionParada().trim().isEmpty()) {
-            throw new IllegalArgumentException("La dirección de la parada es obligatoria");
+            throw new BadRequestException("La dirección de la parada es obligatoria");
         }
 
         Parada nuevaParada = new Parada(parada);
@@ -73,16 +75,16 @@ public class ParadasService {
 
     public void quitarParada(Long idParada) {
         if (idParada == null || idParada <= 0) {
-            throw new IllegalArgumentException("ID de parada inválido: " + idParada);
+            throw new BadRequestException("ID de parada inválido: " + idParada);
         }
 
         // CORRECCIÓN: Verificar existencia antes de eliminar
         Parada parada = paradasRepository.findById(idParada)
-                .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada con id: " + idParada));
+                .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + idParada));
 
         // Verificar que no tenga monopatines antes de eliminar
         if (parada.getIdMonopatines() != null && !parada.getIdMonopatines().isEmpty()) {
-            throw new IllegalStateException(
+            throw new BadRequestException(
                     String.format("No se puede eliminar la parada %d porque tiene %d monopatín(es) ubicado(s)",
                             idParada, parada.getIdMonopatines().size())
             );
@@ -95,20 +97,20 @@ public class ParadasService {
     public MonopatinParadaDTO ubicarMonopatinEnParada(Long idParada, Long idMonopatin) {
         // Validaciones de entrada
         if (idParada == null || idParada <= 0) {
-            throw new IllegalArgumentException("ID de parada inválido: " + idParada);
+            throw new BadRequestException("ID de parada inválido: " + idParada);
         }
 
         if (idMonopatin == null || idMonopatin <= 0) {
-            throw new IllegalArgumentException("ID de monopatín inválido: " + idMonopatin);
+            throw new BadRequestException("ID de monopatín inválido: " + idMonopatin);
         }
 
         // Buscar la parada
         Parada parada = paradasRepository.findById(idParada)
-                .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada con id: " + idParada));
+                .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + idParada));
 
         // CORRECCIÓN: Verificar si el monopatín ya está en esta parada
         if (parada.getIdMonopatines() != null && parada.getIdMonopatines().contains(idMonopatin)) {
-            throw new IllegalStateException(
+            throw new BadRequestException(
                     String.format("El monopatín %d ya está ubicado en la parada %d", idMonopatin, idParada)
             );
         }
@@ -130,7 +132,7 @@ public class ParadasService {
         MonopatinResponseDTO monopatinActualizado = monopatinClient.registrarMonopatinParada(idMonopatin, idParada);
 
         if (monopatinActualizado == null) {
-            throw new IllegalStateException(
+            throw new InternalServerErrorException(
                     String.format("Error al registrar monopatín %d en parada %d", idMonopatin, idParada)
             );
         }
@@ -157,16 +159,16 @@ public class ParadasService {
     public ParadaResponseDTO updateParada(Long idParada, ParadaRequestDTO paradaRequestDTO) {
         // Validaciones de entrada
         if (idParada == null || idParada <= 0) {
-            throw new IllegalArgumentException("ID de parada inválido: " + idParada);
+            throw new BadRequestException("ID de parada inválido: " + idParada);
         }
 
         if (paradaRequestDTO == null) {
-            throw new IllegalArgumentException("ParadaRequestDTO no puede ser null");
+            throw new BadRequestException("ParadaRequestDTO no puede ser null");
         }
 
         // Buscar la parada
         Parada parada = paradasRepository.findById(idParada)
-                .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada con id: " + idParada));
+                .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + idParada));
 
         // CORRECCIÓN: Validar datos antes de actualizar
         if (paradaRequestDTO.nombreParada() != null && !paradaRequestDTO.nombreParada().trim().isEmpty()) {
@@ -195,12 +197,12 @@ public class ParadasService {
     public List<MonopatinParadaDTO> getMonopatinesByParada(Long idParada) {
         // Validación de entrada
         if (idParada == null || idParada <= 0) {
-            throw new IllegalArgumentException("ID de parada inválido: " + idParada);
+            throw new BadRequestException("ID de parada inválido: " + idParada);
         }
 
         // Buscar la parada
         Parada parada = paradasRepository.findById(idParada)
-                .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada con id: " + idParada));
+                .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + idParada));
 
         // Si no hay monopatines, retornar lista vacía
         if (parada.getIdMonopatines() == null || parada.getIdMonopatines().isEmpty()) {

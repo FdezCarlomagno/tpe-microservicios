@@ -43,7 +43,6 @@ public class Parada {
     private List<Long> idMonopatines = new ArrayList<>();
 
     public Parada(ParadaRequestDTO parada) {
-        this.id = parada.id();
         this.descripcionParada = parada.descripcionParada();
         this.nombreParada = parada.nombreParada();
         this.direccionParada = parada.direccionParada();

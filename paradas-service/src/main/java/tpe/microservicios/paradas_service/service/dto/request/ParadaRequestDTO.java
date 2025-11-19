@@ -8,7 +8,6 @@ import jakarta.persistence.Id;
 import java.util.List;
 
 public record ParadaRequestDTO(
-        long id,
          String nombreParada,
          String descripcionParada,
          String direccionParada,
