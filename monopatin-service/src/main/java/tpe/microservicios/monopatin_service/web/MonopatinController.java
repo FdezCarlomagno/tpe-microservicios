@@ -1,13 +1,18 @@
 package tpe.microservicios.monopatin_service.web;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import tpe.microservicios.monopatin_service.service.MonopatinService;
 import tpe.microservicios.monopatin_service.service.dto.request.MonopatinRequestDTO;
 import tpe.microservicios.monopatin_service.service.dto.response.MonopatinResponseDTO;
@@ -22,91 +27,139 @@ public class MonopatinController {
 
     private final MonopatinService monopatinService;
 
+    // ---------------------------------------------------------
     @GetMapping
     @Operation(summary = "Obtener todos los monopatines")
-    @ApiResponse(responseCode = "200", description = "Lista de monopatines obtenida exitosamente")
+    @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente")
     public ResponseEntity<List<MonopatinResponseDTO>> getMonopatines() {
         return ResponseEntity.ok(monopatinService.findAll());
     }
 
+    // ---------------------------------------------------------
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener monopatin por ID")
-    @ApiResponse(responseCode = "200", description = "Monopatin encontrado")
-    @ApiResponse(responseCode = "404", description = "Monopatin no encontrado")
-    public ResponseEntity<MonopatinResponseDTO> getMonopatinById(@PathVariable Long id) {
+    @Operation(summary = "Obtener monopatín por ID")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Monopatín encontrado"),
+            @ApiResponse(responseCode = "404", description = "No encontrado")
+    })
+    public ResponseEntity<MonopatinResponseDTO> getMonopatinById(
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id) {
+
         return ResponseEntity.ok(monopatinService.findById(id));
     }
 
+    // ---------------------------------------------------------
     @PostMapping
-    @Operation(summary = "Crear un nuevo monopatin")
-    @ApiResponse(responseCode = "201", description = "Monopatin creado exitosamente")
-    @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    @Operation(summary = "Crear nuevo monopatín")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Creado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     public ResponseEntity<MonopatinResponseDTO> addMonopatin(
             @Valid @RequestBody MonopatinRequestDTO monopatinRequestDTO) {
+
         MonopatinResponseDTO created = monopatinService.agregarMonopatin(monopatinRequestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);  // ✅ 201 CREATED
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    // ---------------------------------------------------------
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar un monopatin")
-    @ApiResponse(responseCode = "200", description = "Monopatin actualizado")
-    @ApiResponse(responseCode = "404", description = "Monopatin no encontrado")
+    @Operation(summary = "Actualizar monopatín completo")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Actualizado correctamente"),
+            @ApiResponse(responseCode = "404", description = "No encontrado")
+    })
     public ResponseEntity<MonopatinResponseDTO> updateMonopatin(
-            @PathVariable Long id,
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id,
+
             @Valid @RequestBody MonopatinRequestDTO monopatinRequestDTO) {
+
         return ResponseEntity.ok(monopatinService.actualizarMonopatin(id, monopatinRequestDTO));
     }
 
-    @PatchMapping("/{id}/mantenimiento")  // ✅ PATCH para actualizaciones parciales
-    @Operation(summary = "Registrar monopatin en mantenimiento")
-    @ApiResponse(responseCode = "200", description = "Monopatin enviado a mantenimiento")
-    @ApiResponse(responseCode = "404", description = "Monopatin no encontrado")
-    public ResponseEntity<String> registrarEnMantenimiento(@PathVariable Long id) {
+    // ---------------------------------------------------------
+    @PatchMapping("/{id}/mantenimiento")
+    @Operation(summary = "Enviar monopatín a mantenimiento")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Actualizado"),
+            @ApiResponse(responseCode = "404", description = "No encontrado")
+    })
+    public ResponseEntity<String> registrarEnMantenimiento(
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id) {
+
         monopatinService.registrarMonopatinEnMantenimiento(id);
-        return ResponseEntity.ok("Actualizado correctamente");
+        return ResponseEntity.ok("Monopatín enviado a mantenimiento");
     }
 
+    // ---------------------------------------------------------
     @PatchMapping("/{id}/activar")
-    @Operation(summary = "Activar un monopatin")
-    public ResponseEntity<MonopatinResponseDTO> activarMonopatin(@PathVariable Long id) {
+    @Operation(summary = "Activar monopatín")
+    public ResponseEntity<MonopatinResponseDTO> activarMonopatin(
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id) {
+
         return ResponseEntity.ok(monopatinService.activarMonopatin(id));
     }
 
+    // ---------------------------------------------------------
     @PatchMapping("/{id}/desactivar")
-    @Operation(summary = "Desactivar un monopatin")
-    public ResponseEntity<MonopatinResponseDTO> desactivarMonopatin(@PathVariable Long id) {
+    @Operation(summary = "Desactivar monopatín")
+    public ResponseEntity<MonopatinResponseDTO> desactivarMonopatin(
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id) {
+
         return ResponseEntity.ok(monopatinService.desactivarMonopatin(id));
     }
 
+    // ---------------------------------------------------------
     @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar un monopatin")
-    @ApiResponse(responseCode = "204", description = "Monopatin eliminado exitosamente")
-    @ApiResponse(responseCode = "404", description = "Monopatin no encontrado")
-    public ResponseEntity<Void> eliminarMonopatin(@PathVariable Long id) {
+    @Operation(summary = "Eliminar monopatín")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Eliminado"),
+            @ApiResponse(responseCode = "404", description = "No encontrado")
+    })
+    public ResponseEntity<Void> eliminarMonopatin(
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id) {
+
         monopatinService.quitarMonopatin(id);
         return ResponseEntity.noContent().build();
     }
 
+    // ---------------------------------------------------------
     @PutMapping("/parada/{id}")
-    @Operation(summary = "Setear la parada de un monopatin")
-    @ApiResponse(responseCode = "200", description = "Monopatin actualizado correctamente")
-    @ApiResponse(responseCode = "404", description = "Monopatin no encontrado")
-    public ResponseEntity<MonopatinResponseDTO> actualizarParada(@PathVariable Long idMonopatin, @RequestBody Long idParada) {
-        return ResponseEntity.ok(monopatinService.actualizarParada(idParada, idMonopatin));
+    @Operation(summary = "Actualizar parada de un monopatín")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Actualizado correctamente"),
+            @ApiResponse(responseCode = "404", description = "No encontrado")
+    })
+    public ResponseEntity<MonopatinResponseDTO> actualizarParada(
+            @Parameter(name = "id", description = "ID del monopatín", required = true)
+            @PathVariable("id") Long id,
+
+            @Parameter(name = "idParada", description = "ID de la nueva parada", required = true)
+            @RequestBody Long idParada) {
+
+        return ResponseEntity.ok(monopatinService.actualizarParada(idParada, id));
     }
 
-
-    // Endpoints adicionales útiles
+    // ---------------------------------------------------------
     @GetMapping("/disponibles")
-    @Operation(summary = "Obtener monopatines disponibles")
+    @Operation(summary = "Listar monopatines disponibles")
     public ResponseEntity<List<MonopatinResponseDTO>> getMonopatinesDisponibles() {
         return ResponseEntity.ok(monopatinService.findAllDisponibles());
     }
 
+    // ---------------------------------------------------------
     @GetMapping("/parada/{idParada}")
-    @Operation(summary = "Obtener monopatines por parada")
+    @Operation(summary = "Listar monopatines por parada")
     public ResponseEntity<List<MonopatinResponseDTO>> getMonopatinesByParada(
-            @PathVariable Long idParada) {
+            @Parameter(name = "idParada", description = "ID de la parada", required = true)
+            @PathVariable("idParada") Long idParada) {
+
         return ResponseEntity.ok(monopatinService.findByParada(idParada));
     }
 }
