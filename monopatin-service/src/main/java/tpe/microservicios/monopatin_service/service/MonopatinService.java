@@ -103,24 +103,44 @@ public class MonopatinService {
                 monopatin.getEstado()
         );
     }
-    public MonopatinResponseDTO agregarMonopatin(MonopatinRequestDTO monopatinDTO) {
+    public MonopatinResponseDTO agregarMonopatin(MonopatinRequestDTO dto) {
 
-        if (monopatinDTO == null) {
+        if (dto == null) {
             throw new BadRequestException("MonopatinRequestDTO no puede ser null");
         }
 
-        if (monopatinDTO.idParada() != null) {
-            validarParadaExiste(monopatinDTO.idParada());
+        Long paradaSolicitada = dto.idParada();
+
+        // Paso 1: crear el monopatín SIN parada
+        Monopatin nuevo = new Monopatin(dto);
+        nuevo.setIdParada(null); // ← clave: no asignamos parada todavía
+        Monopatin guardado = monopatinRepository.save(nuevo);
+
+        // Paso 2: si vino una parada, validarlo llamando al microservicio
+        if (paradaSolicitada != null) {
+            try {
+                // validar existencia de la parada
+                ParadaResponseDTO parada = paradaClient.getParadaById(paradaSolicitada);
+                if (parada == null) {
+                    throw new NotFoundException("Parada no encontrada con id " + paradaSolicitada);
+                }
+
+                // notificar al MS de paradas
+                paradaClient.ubicarMonopatinEnParada(paradaSolicitada, guardado.getId());
+
+                // si llegó hasta acá → asignación exitosa → actualizar en BD
+                guardado.setIdParada(paradaSolicitada);
+                monopatinRepository.save(guardado);
+
+            } catch (Exception e) {
+                log.error("No se pudo asignar monopatín {} a la parada {}: {}",
+                        guardado.getId(), paradaSolicitada, e.getMessage());
+
+                // ⚠ Acá NO hacemos rollback global
+                // porque el monopatín fue creado correctamente
+                // solo informamos que quedó SIN parada.
+            }
         }
-
-        Monopatin nuevo = new Monopatin(monopatinDTO);
-        Monopatin guardado = monopatinRepository.save(nuevo); // ← AHORA TIENE ID ✔️
-
-        // ahora sí llamar al FEIGN
-        paradaClient.ubicarMonopatinEnParada(
-                guardado.getIdParada(),
-                guardado.getId()
-        );
 
         return new MonopatinResponseDTO(
                 guardado.getId(),
@@ -129,6 +149,7 @@ public class MonopatinService {
                 guardado.getEstado()
         );
     }
+
 
     public void quitarMonopatin(Long id) {
         // Validación de entrada
@@ -176,7 +197,9 @@ public class MonopatinService {
                     String.format("El monopatín %d no está disponible para cambiar de parada", idMonopatin)
             );
         }
-
+        /*
+        * Sincronizar con el paradaClient
+        * */
         monopatin.setIdParada(paradaId);
         monopatinRepository.save(monopatin);
 
@@ -236,6 +259,27 @@ public class MonopatinService {
                 monopatin.getEstado()
         );
     }
+
+    public MonopatinResponseDTO removerParada(Long idMonopatin) {
+
+        if (idMonopatin == null || idMonopatin <= 0) {
+            throw new BadRequestException("ID de monopatín inválido: " + idMonopatin);
+        }
+
+        Monopatin monopatin = monopatinRepository.findById(idMonopatin)
+                .orElseThrow(() -> new NotFoundException("Monopatín no encontrado con id: " + idMonopatin));
+
+        monopatin.setIdParada(null);
+        monopatinRepository.save(monopatin);
+
+        return new MonopatinResponseDTO(
+                monopatin.getId(),
+                "Sin parada asignada",
+                monopatin.getDisponible(),
+                monopatin.getEstado()
+        );
+    }
+
 
     public MonopatinResponseDTO activarMonopatin(Long idMonopatin) {
         // Validación de entrada

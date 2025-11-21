@@ -95,65 +95,66 @@ public class ParadasService {
     }
 
     public MonopatinParadaDTO ubicarMonopatinEnParada(Long idParada, Long idMonopatin) {
-        // Validaciones de entrada
-        if (idParada == null || idParada <= 0) {
+
+        if (idParada == null || idParada <= 0)
             throw new BadRequestException("ID de parada inválido: " + idParada);
-        }
 
-        if (idMonopatin == null || idMonopatin <= 0) {
+        if (idMonopatin == null || idMonopatin <= 0)
             throw new BadRequestException("ID de monopatín inválido: " + idMonopatin);
-        }
 
-        // Buscar la parada
         Parada parada = paradasRepository.findById(idParada)
                 .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + idParada));
 
-        // CORRECCIÓN: Verificar si el monopatín ya está en esta parada
-        if (parada.getIdMonopatines() != null && parada.getIdMonopatines().contains(idMonopatin)) {
-            throw new BadRequestException(
-                    String.format("El monopatín %d ya está ubicado en la parada %d", idMonopatin, idParada)
-            );
-        }
+        if (parada.getIdMonopatines() != null && parada.getIdMonopatines().contains(idMonopatin))
+            throw new BadRequestException(String.format("El monopatín %d ya está en la parada %d",
+                    idMonopatin, idParada));
 
-        // Verificar si el monopatín está en otra parada
+        // Si estaba en otra parada → removerlo
         Long idParadaActual = paradasRepository.findMonopatinEnParada(idMonopatin);
 
         if (idParadaActual != null && !idParadaActual.equals(idParada)) {
-            // Remover de la parada anterior
-            Parada paradaAnterior = paradasRepository.findById(idParadaActual).orElse(null);
-            if (paradaAnterior != null && paradaAnterior.getIdMonopatines() != null) {
-                paradaAnterior.getIdMonopatines().remove(idMonopatin);
-                paradasRepository.save(paradaAnterior);
-                log.info("Monopatín {} removido de parada {}", idMonopatin, idParadaActual);
+            Parada anterior = paradasRepository.findById(idParadaActual).orElse(null);
+            if (anterior != null && anterior.getIdMonopatines() != null) {
+                anterior.getIdMonopatines().remove(idMonopatin);
+                paradasRepository.save(anterior);
             }
         }
 
-        // Actualizar la ubicación del monopatín en el servicio de monopatines
-        MonopatinResponseDTO monopatinActualizado = monopatinClient.registrarMonopatinParada(idMonopatin, idParada);
+        // Actualizar en MS Monopatines
+        MonopatinResponseDTO actualizado = monopatinClient.registrarMonopatinParada(idMonopatin, idParada);
 
-        if (monopatinActualizado == null) {
-            throw new InternalServerErrorException(
-                    String.format("Error al registrar monopatín %d en parada %d", idMonopatin, idParada)
-            );
-        }
+        if (actualizado == null)
+            throw new InternalServerErrorException("No se pudo sincronizar la parada en MS Monopatines");
 
-        // CORRECCIÓN: Agregar el ID del monopatín (Long) a la lista, no el DTO completo
-        if (parada.getIdMonopatines() == null) {
-            parada.setIdMonopatines(new ArrayList<>());
-        }
         parada.getIdMonopatines().add(idMonopatin);
-
-        // CORRECCIÓN: Guardar la parada actualizada
         paradasRepository.save(parada);
 
-        log.info("Monopatín {} ubicado en parada {} exitosamente", idMonopatin, idParada);
+        return new MonopatinParadaDTO(parada.getId(), idMonopatin, parada.getNombreParada());
+    }
 
-        // CORRECCIÓN: Retornar el ID correcto del monopatín
-        return new MonopatinParadaDTO(
-                parada.getId(),
-                idMonopatin,
-                parada.getNombreParada()
-        );
+
+    public MonopatinParadaDTO removerMonopatinDeParada(Long idParada, Long idMonopatin) {
+
+        if (idParada == null || idParada <= 0)
+            throw new BadRequestException("ID de parada inválido: " + idParada);
+
+        if (idMonopatin == null || idMonopatin <= 0)
+            throw new BadRequestException("ID de monopatín inválido: " + idMonopatin);
+
+        Parada parada = paradasRepository.findById(idParada)
+                .orElseThrow(() -> new NotFoundException("Parada no encontrada con id: " + idParada));
+
+        if (parada.getIdMonopatines() == null || !parada.getIdMonopatines().contains(idMonopatin))
+            throw new BadRequestException(String.format("El monopatín %d no está en la parada %d",
+                    idMonopatin, idParada));
+
+        parada.getIdMonopatines().remove(idMonopatin);
+        paradasRepository.save(parada);
+
+        // Sincronizar con el MS monopatines
+        monopatinClient.removerParada(idMonopatin);
+
+        return new MonopatinParadaDTO(parada.getId(), idMonopatin, parada.getNombreParada());
     }
 
     public ParadaResponseDTO updateParada(Long idParada, ParadaRequestDTO paradaRequestDTO) {

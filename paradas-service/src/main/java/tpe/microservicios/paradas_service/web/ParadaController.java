@@ -150,6 +150,29 @@ public class ParadaController {
     }
 
     @Operation(
+            summary = "Remover monopatin de parada",
+            description = "Remueve un monopatin de una parada seleccionada"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Monopatin correctamente removido de la parada"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Monopatin a remover no encontrado"
+            )
+    })
+    @PutMapping("/{id}/remover-monopatin")
+    public ResponseEntity<MonopatinParadaDTO> removerMopatinDeParada(@PathVariable("id") Long idParada, @RequestBody @Valid Long idMonopatin){
+        MonopatinParadaDTO m = paradasService.removerMonopatinDeParada(idParada, idMonopatin);
+        if (m == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(m);
+    }
+
+    @Operation(
             summary = "Obtener monopatines por parada",
             description = "Obtiene todos los monopatines ubicados en una parada especificada"
     )
