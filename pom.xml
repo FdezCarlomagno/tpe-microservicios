@@ -47,6 +47,7 @@
         <module>paradas-service</module>
         <module>viajes-service</module>
         <module>admin-service</module> <!-- ¡AGREGA admin-service! -->
+        <module>external-mocks</module>
     </modules>
 
     <build>
