@@ -3,6 +3,8 @@ package tpe.microservicios.viajes_service.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tpe.microservicios.viajes_service.domains.Tarifa;
+import tpe.microservicios.viajes_service.exceptions.BadRequestException;
+import tpe.microservicios.viajes_service.exceptions.NotFoundException;
 import tpe.microservicios.viajes_service.repository.TarifaRepository;
 
 import java.time.Duration;
@@ -22,13 +24,13 @@ public class TarifaService {
         long duracionTotal = Duration.between(inicio, fin).toMinutes();
         
         Tarifa tarifaNormalObj = tarifaRepository.findByTipo(TARIFA_NORMAL)
-                .orElseThrow(() -> new RuntimeException("Tarifa NORMAL no configurada"));
+                .orElseThrow(() -> new NotFoundException("Tarifa NORMAL no configurada"));
         
         Tarifa tarifaPausaExcedidaObj = tarifaRepository.findByTipo(TARIFA_PAUSA_EXCEDIDA)
-                .orElseThrow(() -> new RuntimeException("Tarifa PAUSA_EXCEDIDA no configurada"));
+                .orElseThrow(() -> new NotFoundException("Tarifa PAUSA_EXCEDIDA no configurada"));
         
         Tarifa pausaMaxMinutosObj = tarifaRepository.findByTipo(PAUSA_MAX_MINUTOS)
-                .orElseThrow(() -> new RuntimeException("Configuración PAUSA_MAX_MINUTOS no existe"));
+                .orElseThrow(() -> new NotFoundException("Configuración PAUSA_MAX_MINUTOS no existe"));
 
         float tarifaNormal = tarifaNormalObj.getValor();
         float tarifaPausaExcedida = tarifaPausaExcedidaObj.getValor();
@@ -43,12 +45,12 @@ public class TarifaService {
 
     public Tarifa obtenerTarifa(String tipo) {
         return tarifaRepository.findByTipo(tipo)
-                .orElseThrow(() -> new RuntimeException("Tarifa " + tipo + " no encontrada"));
+                .orElseThrow(() -> new NotFoundException("Tarifa " + tipo + " no encontrada"));
     }
 
     public Tarifa actualizarTarifa(String tipo, Float nuevoValor) {
         Tarifa tarifa = tarifaRepository.findByTipo(tipo)
-                .orElseThrow(() -> new RuntimeException("Tarifa " + tipo + " no encontrada"));
+                .orElseThrow(() -> new NotFoundException("Tarifa " + tipo + " no encontrada"));
         
         tarifa.setValor(nuevoValor);
         return tarifaRepository.save(tarifa);

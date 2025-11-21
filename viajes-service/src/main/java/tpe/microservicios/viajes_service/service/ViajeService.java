@@ -9,6 +9,10 @@ import tpe.microservicios.viajes_service.clients.MonopatinClient;
 import tpe.microservicios.viajes_service.clients.ParadasClient;
 import tpe.microservicios.viajes_service.domains.Viaje;
 import tpe.microservicios.viajes_service.dto.ViajeDTO;
+import tpe.microservicios.viajes_service.exceptions.BadRequestException;
+import tpe.microservicios.viajes_service.exceptions.ConflictException;
+import tpe.microservicios.viajes_service.exceptions.ForbiddenException;
+import tpe.microservicios.viajes_service.exceptions.NotFoundException;
 import tpe.microservicios.viajes_service.repository.ViajeRepository;
 import tpe.microservicios.viajes_service.service.dto.request.FinalizarViajeDTO;
 import tpe.microservicios.viajes_service.service.dto.request.ViajeRequestDTO;
@@ -34,21 +38,21 @@ public class ViajeService {
         // Validamos existencia de todo
         var account = accountClient.getAccountById(viajeRequestDTO.idUserAccount());
         if (account == null) {
-            throw new RuntimeException("User account not found");
+            throw new NotFoundException("User account not found");
         }
 
         if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
-            throw new RuntimeException("Cuenta anulada");
+            throw new ForbiddenException("Cuenta anulada");
         }
 
         var monopatin = monopatinClient.getMonopatinById(viajeRequestDTO.idMonopatin());
         if (monopatin == null) {
-            throw new RuntimeException("Monopatin not found");
+            throw new NotFoundException("Monopatin not found");
         }
 
         var parada = paradasClient.getParadaById(viajeRequestDTO.idParadaOrigen());
         if (parada == null) {
-            throw new RuntimeException("Parada origen not found");
+            throw new NotFoundException("Parada origen not found");
         }
 
         Viaje v = viajeRepository.save(new Viaje(new ViajeRequestDTO(account.idAccount(), monopatin.id(), parada.id())));
@@ -118,19 +122,19 @@ public class ViajeService {
     public ViajeResponseDTO pausarViaje(Long viajeId, float idAccount){
         AccountResponseDTO account = accountClient.getAccountById(viajeId);
         if (account == null) {
-            throw new RuntimeException("User account not found");
+            throw new NotFoundException("User account not found");
         }
 
         if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
-            throw new RuntimeException("Cuenta anulada");
+            throw new ForbiddenException("Cuenta anulada");
         }
 
         Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
         if (viaje == null) {
-            throw new RuntimeException("Viaje not found");
+            throw new NotFoundException("Viaje not found");
         }
 
-        if(viaje.getEstado() == EstadoViaje.PAUSA) throw new RuntimeException("El viaje actual esta en pausa");
+        if(viaje.getEstado() == EstadoViaje.PAUSA) throw new ConflictException("El viaje actual esta en pausa");
 
         viaje.pausar();
         viajeRepository.save(viaje);
@@ -141,19 +145,19 @@ public class ViajeService {
     public ViajeResponseDTO reanudarViaje(Long viajeId, float idAccount){
         AccountResponseDTO account = accountClient.getAccountById(viajeId);
         if (account == null) {
-            throw new RuntimeException("User account not found");
+            throw new NotFoundException("User account not found");
         }
 
         if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
-            throw new RuntimeException("Cuenta anulada");
+            throw new ForbiddenException("Cuenta anulada");
         }
 
         Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
         if (viaje == null) {
-            throw new RuntimeException("Viaje not found");
+            throw new NotFoundException("Viaje not found");
         }
 
-        if(viaje.getEstado() != EstadoViaje.PAUSA) throw new RuntimeException("El viaje actual no esta en pausa");
+        if(viaje.getEstado() != EstadoViaje.PAUSA) throw new ConflictException("El viaje actual no esta en pausa");
 
         viaje.reanudarUltimaPausa();
         viajeRepository.save(viaje);
@@ -165,7 +169,7 @@ public class ViajeService {
        Viaje v = viajeRepository.findById(viajeId).orElse(null);
 
        if (v == null){
-           throw new RuntimeException("Viaje not found");
+           throw new NotFoundException("Viaje not found");
        }
 
        return convertToViajeResponseDTO(v);
@@ -174,21 +178,21 @@ public class ViajeService {
     public ViajeResponseDTO finalizarViaje(Long viajeId, FinalizarViajeDTO viajeDTO) {
         AccountResponseDTO account = accountClient.getAccountById(viajeDTO.idUserAccount());
         if (account == null) {
-            throw new RuntimeException("User account not found");
+            throw new NotFoundException("User account not found");
         }
 
         if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
-            throw new RuntimeException("Cuenta anulada");
+            throw new ForbiddenException("Cuenta anulada");
         }
 
         ParadaResponseDTO parada = paradasClient.getParadaById(viajeDTO.idParadaDestino());
         if (parada == null) {
-            throw new RuntimeException("Parada destino not found");
+            throw new NotFoundException("Parada destino not found");
         }
 
         Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
         if (viaje == null) {
-            throw new RuntimeException("Viaje not found");
+            throw new NotFoundException("Viaje not found");
         }
 
         viaje.finalizar(viajeDTO.idParadaDestino(), viajeDTO.kilometros(), 0);
@@ -196,7 +200,7 @@ public class ViajeService {
         viaje.setCostoViaje(costo);
 
         if(account.saldo() < costo){
-            throw new RuntimeException("Saldo insuficiente para pagar el viaje");
+            throw new BadRequestException("Saldo insuficiente para pagar el viaje");
         }
 
         accountClient.updateSaldo(viajeDTO.idUserAccount(), account.saldo() - costo);
@@ -246,7 +250,7 @@ public class ViajeService {
 
     public void deleteViaje(Long idViaje){
         if(viajeRepository.findById(idViaje).isEmpty()){
-            throw new RuntimeException("Viaje not found");
+            throw new NotFoundException("Viaje not found");
         }
         viajeRepository.deleteById(idViaje);
     }

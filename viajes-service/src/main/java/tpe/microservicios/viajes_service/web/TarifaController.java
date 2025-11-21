@@ -1,5 +1,11 @@
 package tpe.microservicios.viajes_service.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +26,16 @@ public class TarifaController {
     private final TarifaService tarifaService;
     private final TarifaRepository tarifaRepository;
 
-    /**
-     * Obtener todas las tarifas
-     */
+    // ============================================================
+    // OBTENER TODAS LAS TARIFAS
+    // ============================================================
+    @Operation(
+            summary = "Obtener todas las tarifas",
+            description = "Devuelve la lista completa de tarifas configuradas."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Listado de tarifas obtenido correctamente")
+    })
     @GetMapping
     public ResponseEntity<List<TarifaResponseDTO>> obtenerTodasLasTarifas() {
         List<Tarifa> tarifas = tarifaRepository.findAll();
@@ -32,11 +45,23 @@ public class TarifaController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Obtener una tarifa específica por tipo
-     */
+    // ============================================================
+    // OBTENER TARIFA POR TIPO
+    // ============================================================
+    @Operation(
+            summary = "Obtener una tarifa por tipo",
+            description = "Devuelve una tarifa específica buscándola por su tipo (NORMAL, PAUSA_EXCEDIDA, etc.)."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tarifa encontrada"),
+            @ApiResponse(responseCode = "404", description = "Tarifa no encontrada",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @GetMapping("/{tipo}")
-    public ResponseEntity<TarifaResponseDTO> obtenerTarifa(@PathVariable String tipo) {
+    public ResponseEntity<TarifaResponseDTO> obtenerTarifa(
+            @Parameter(name = "tipo", description = "Tipo de tarifa", required = true)
+            @PathVariable String tipo
+    ) {
         Tarifa tarifa = tarifaService.obtenerTarifa(tipo);
         TarifaResponseDTO response = new TarifaResponseDTO(
                 tarifa.getId(),
@@ -47,11 +72,21 @@ public class TarifaController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Crear una nueva tarifa (solo administrador)
-     */
+    // ============================================================
+    // CREAR TARIFA
+    // ============================================================
+    @Operation(
+            summary = "Crear nueva tarifa",
+            description = "Crea una nueva tarifa. Solo debe ser usado por administradores."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Tarifa creada correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
     @PostMapping
-    public ResponseEntity<TarifaResponseDTO> crearTarifa(@RequestBody TarifaRequestDTO request) {
+    public ResponseEntity<TarifaResponseDTO> crearTarifa(
+            @RequestBody TarifaRequestDTO request
+    ) {
         Tarifa tarifa = tarifaService.crearTarifa(request.tipo(), request.valor(), request.pausaMaxMinutos());
         TarifaResponseDTO response = new TarifaResponseDTO(
                 tarifa.getId(),
@@ -62,13 +97,24 @@ public class TarifaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Actualizar una tarifa existente (solo administrador)
-     */
+    // ============================================================
+    // ACTUALIZAR TARIFA
+    // ============================================================
+    @Operation(
+            summary = "Actualizar tarifa existente",
+            description = "Actualiza el valor de una tarifa existente por tipo. Solo administradores."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tarifa actualizada correctamente"),
+            @ApiResponse(responseCode = "404", description = "Tarifa no encontrada",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
     @PutMapping("/{tipo}")
     public ResponseEntity<TarifaResponseDTO> actualizarTarifa(
+            @Parameter(name = "tipo", description = "Tipo de tarifa a actualizar", required = true)
             @PathVariable String tipo,
-            @RequestBody TarifaRequestDTO request) {
+            @RequestBody TarifaRequestDTO request
+    ) {
         Tarifa tarifa = tarifaService.actualizarTarifa(tipo, request.valor());
         TarifaResponseDTO response = new TarifaResponseDTO(
                 tarifa.getId(),
@@ -79,11 +125,22 @@ public class TarifaController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Eliminar una tarifa (solo administrador)
-     */
+    // ============================================================
+    // ELIMINAR TARIFA
+    // ============================================================
+    @Operation(
+            summary = "Eliminar una tarifa",
+            description = "Elimina una tarifa por su ID. Solo administradores."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Tarifa eliminada correctamente"),
+            @ApiResponse(responseCode = "404", description = "Tarifa no encontrada")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarTarifa(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminarTarifa(
+            @Parameter(name = "id", description = "ID de la tarifa a eliminar", required = true)
+            @PathVariable Long id
+    ) {
         tarifaRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
