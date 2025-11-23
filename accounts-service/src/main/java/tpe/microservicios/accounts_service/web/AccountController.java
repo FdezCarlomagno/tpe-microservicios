@@ -15,6 +15,7 @@ import tpe.microservicios.accounts_service.service.dto.request.UserAccountReques
 import tpe.microservicios.accounts_service.service.dto.response.AccountResponseDTO;
 import tpe.microservicios.accounts_service.service.dto.response.EstadoCuentaDTO;
 import tpe.microservicios.accounts_service.service.dto.response.UserAccountResponseDTO;
+import tpe.microservicios.accounts_service.utils.AccountType;
 
 import java.util.List;
 
@@ -106,6 +107,28 @@ public class AccountController {
         return ResponseEntity.ok(a);
     }
 
+    @Operation(
+            summary = "Obtener la cuenta a la que esta asociado un usuario",
+            description = "Obtiene la cuenta a la que esta asociado un usuario mediante la id del usuario"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Cuenta de usuario encontrada"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cuenta de usuario no encontrada"
+            )
+    })
+    @GetMapping("/users/{id}/account")
+    public ResponseEntity<AccountResponseDTO> getAccountByUserID(
+            @Parameter(name = "id", description = "El id del usuario a buscar")
+            @PathVariable("id") String id
+    ){
+        return ResponseEntity.ok(userAccountService.getAccountByUserID(id));
+    }
+
     // -------------------------------------------------------------------------
     @Operation(
             summary = "Restaurar una cuenta de usuario",
@@ -171,9 +194,33 @@ public class AccountController {
     public ResponseEntity<UserAccountResponseDTO> linkUserToUserAccount(
             @Parameter(description = "ID de la cuenta", example = "2")
             @PathVariable("id") long idUserAccount,
-            @RequestBody long idUser){
+            @RequestBody String idUser){
 
         return ResponseEntity.ok(userAccountService.linkUserToUserAccount(idUserAccount, idUser));
+    }
+
+
+    @Operation(
+            summary = "Cambiar el tipo de una cuenta",
+            description = "Cambia el tipo de una cuenta a un AccountType"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Tipo de cuenta cambiada exitosamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Cuenta no encontrada"
+            )
+    })
+    @PatchMapping("/{id}/account-type")
+    public ResponseEntity<AccountResponseDTO> updateAccountType(
+            @Parameter(description = "ID de la cuenta", example = "6")
+            @PathVariable("id") long id,
+            @RequestBody AccountType type
+    ){
+        return ResponseEntity.ok(userAccountService.changeAccountType(id, type));
     }
 
     // -------------------------------------------------------------------------
@@ -189,7 +236,7 @@ public class AccountController {
     public ResponseEntity<UserAccountResponseDTO> unlinkUserToUserAccount(
             @Parameter(description = "ID de la cuenta", example = "2")
             @PathVariable("id") long idUserAccount,
-            @RequestBody long idUser){
+            @RequestBody String idUser){
 
         return ResponseEntity.ok(userAccountService.unlinkUserToUserAccount(idUserAccount, idUser));
     }

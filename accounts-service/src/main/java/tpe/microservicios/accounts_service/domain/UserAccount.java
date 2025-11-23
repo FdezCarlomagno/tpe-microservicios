@@ -32,7 +32,7 @@ public class UserAccount {
     private float saldo;
 
     @ElementCollection
-    private List<Long> idUsers;
+    private List<String> idUsers;
 
     @Column
     private boolean cuentaAnulada;

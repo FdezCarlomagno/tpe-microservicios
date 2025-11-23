@@ -1,22 +1,23 @@
 package tpe.microservicios.users_service.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import tpe.microservicios.users_service.domain.User;
-import tpe.microservicios.users_service.service.dto.user.response.UserResponseDTO;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends MongoRepository<User, String> {  // Cambio: JpaRepository → MongoRepository, Long → String
 
-    //metodos comunes
-    /*@Query("SELECT new tpe.microservicios.users_service.service.dto.user.response.UserResponseDTO(" +
-            "u.id, u.nombre, u.apellido, u.telefono, u.email) FROM User u")
-    List<UserResponseDTO> findUsers();
+    boolean existsByEmail(String email);
 
-    @Query("SELECT new tpe.microservicios.users_service.service.dto.user.response.UserResponseDTO(" +
-            "u.id, u.nombre, u.apellido, u.telefono, u.email) FROM User u WHERE u.id = :user_id")
-    UserResponseDTO findById(@Param("user_id") long user_id);*/
+    // Métodos adicionales útiles
+    Optional<User> findByEmail(String email);
 
+    // Consulta personalizada si necesitas
+    @Query("{ 'email': ?0 }")
+    List<User> findUsersByEmail(String email);
+
+    // Para verificar email excluyendo un usuario específico (útil en updates)
+    boolean existsByEmailAndIdNot(String email, String id);
 }

@@ -1,14 +1,13 @@
 package tpe.microservicios.users_service.domain;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 import tpe.microservicios.users_service.service.dto.user.request.UserRequestDTO;
 import tpe.microservicios.users_service.service.dto.user.response.UserResponseDTO;
 
-import java.util.List;
-
-@Entity
-@Table(name = "users")
+@Document(collection = "users")  // Cambio: @Entity → @Document
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,24 +16,15 @@ import java.util.List;
 @EqualsAndHashCode
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Id  // Cambio: @Id de Spring Data MongoDB
+    private String id;  // Cambio: long → String (MongoDB usa ObjectId como String)
 
-    @Column
     private String nombre;
-
-    @Column
     private String apellido;
-
-    @Column
     private String telefono;
 
-    @Column(unique = true)
+    @Indexed(unique = true)  // Cambio: @Column(unique = true) → @Indexed(unique = true)
     private String email;
-
-
-
 
     public User(UserRequestDTO userRequestDTO) {
         this.email = userRequestDTO.email();
@@ -45,12 +35,11 @@ public class User {
 
     public UserResponseDTO toDTO(){
         return new UserResponseDTO(
-                this.id,
-             this.nombre,
-             this.apellido,
-             this.telefono,
-             this.email
+                this.id,  // Ahora es String
+                this.nombre,
+                this.apellido,
+                this.telefono,
+                this.email
         );
     }
-
 }

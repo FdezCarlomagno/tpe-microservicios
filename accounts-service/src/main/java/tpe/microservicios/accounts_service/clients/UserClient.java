@@ -9,5 +9,5 @@ import tpe.microservicios.accounts_service.service.dto.response.UserResponseDTO;
 public interface UserClient {
 
     @GetMapping("/{id}")
-    UserResponseDTO getUserById(@PathVariable("id") Long id);
+    UserResponseDTO getUserById(@PathVariable("id") String id);
 }

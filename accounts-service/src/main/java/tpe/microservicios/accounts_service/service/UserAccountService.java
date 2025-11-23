@@ -14,6 +14,7 @@ import tpe.microservicios.accounts_service.service.dto.request.UserAccountReques
 import tpe.microservicios.accounts_service.service.dto.response.AccountResponseDTO;
 import tpe.microservicios.accounts_service.service.dto.response.EstadoCuentaDTO;
 import tpe.microservicios.accounts_service.service.dto.response.UserAccountResponseDTO;
+import tpe.microservicios.accounts_service.utils.AccountType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +74,28 @@ public class UserAccountService {
         );
     }
 
+    public AccountResponseDTO getAccountByUserID(String idUser) {
+        var user = userClient.getUserById(idUser);
+        if (user == null) {
+            throw new NotFoundException("Usuario no encontrado");
+        }
+
+        UserAccount account = userAccountRepository
+                .getAccountByUserID(idUser)
+                .orElseThrow(() -> new NotFoundException(
+                        "No hay una cuenta asociada con el usuario con id: " + idUser
+                ));
+
+        return new AccountResponseDTO(
+                account.getId(),
+                account.getType(),
+                account.getSaldo(),
+                account.getIdUsers(),
+                account.isCuentaAnulada()
+        );
+    }
+
+
     // puede haber muchos usuarios asociados a una misma cuenta
     public List<UserAccountResponseDTO> getUsersFromAccount(Long idAccount){
         UserAccount account = userAccountRepository.findById(idAccount).orElseThrow(() -> new NotFoundException("Cuenta no encontrada"));
@@ -105,7 +128,7 @@ public class UserAccountService {
         userAccountRepository.save(userAccount);
     }
 
-    public UserAccountResponseDTO linkUserToUserAccount(Long idUserAccount, Long idUser){
+    public UserAccountResponseDTO linkUserToUserAccount(Long idUserAccount, String idUser){
         // check if user account exists
         UserAccount userAccount = userAccountRepository.findById(idUserAccount).orElseThrow(() -> new NotFoundException("Cuenta de usuario no encontrada"));
 
@@ -134,7 +157,7 @@ public class UserAccountService {
         );
     }
 
-    public UserAccountResponseDTO unlinkUserToUserAccount(Long idUserAccount, Long idUser){
+    public UserAccountResponseDTO unlinkUserToUserAccount(Long idUserAccount, String idUser){
         // check if user account exists
         UserAccount userAccount = userAccountRepository.findById(idUserAccount).orElseThrow(() -> new NotFoundException("Cuenta de usuario no encontrada"));
 
@@ -167,5 +190,21 @@ public class UserAccountService {
         userAccountRepository.findById(idUserAccount).orElseThrow(() -> new NotFoundException("Cuenta no encontrada"));
 
         userAccountRepository.deleteById(idUserAccount);
+    }
+
+    public AccountResponseDTO changeAccountType(Long idAccount, AccountType type){
+        UserAccount a = userAccountRepository.findById(idAccount).orElseThrow(() -> new NotFoundException("Cuenta no encontrada"));
+
+        a.setType(type);
+        userAccountRepository.save(a);
+
+        return new AccountResponseDTO(
+                a.getId(),
+                a.getType(),
+                a.getSaldo(),
+                a.getIdUsers(),
+                a.isCuentaAnulada()
+        );
+
     }
 }

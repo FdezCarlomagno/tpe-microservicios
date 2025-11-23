@@ -7,6 +7,6 @@ import java.util.List;
 
 public record UserAccountRequestDTO(
      AccountType type,
-     List<Long> idUsers
+     List<String> idUsers
 ) {
 }

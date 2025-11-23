@@ -50,14 +50,9 @@ public class UserController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(
-            @Parameter(description = "ID del usuario", example = "5")
-            @PathVariable("id") long id) {
-
-        UserResponseDTO user = userService.findById(id);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(user);
+            @Parameter(description = "ID del usuario", example = "69236dabfe4db973c9dc4666")
+            @PathVariable("id") String id) {
+        return ResponseEntity.ok(userService.findById(id));
     }
 
     @Operation(
@@ -71,7 +66,6 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserResponseDTO> saveUser(
             @Valid @RequestBody UserRequestDTO user) {
-
         UserResponseDTO saved = userService.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
@@ -87,15 +81,10 @@ public class UserController {
     })
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(
-            @Parameter(description = "ID del usuario a actualizar", example = "5")
-            @PathVariable("id") long id,
+            @Parameter(description = "ID del usuario a actualizar", example = "69236dabfe4db973c9dc4666")
+            @PathVariable("id") String id,
             @Valid @RequestBody UserRequestDTO userRequest) {
-
-        UserResponseDTO updated = userService.updateUser(userRequest, id);
-        if (updated == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(userService.updateUser(userRequest, id));
     }
 
     @Operation(
@@ -107,13 +96,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("id") long id) {
-
-        UserResponseDTO user = userService.findById(id);
-        if (user == null) {
-            return ResponseEntity.notFound().build();
-        }
-
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") String id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
