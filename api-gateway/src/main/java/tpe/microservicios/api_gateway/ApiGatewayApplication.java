@@ -2,6 +2,7 @@ package tpe.microservicios.api_gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * API Gateway para el sistema de gestión de monopatines
@@ -21,6 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * - Fallback handlers para cada servicio
  */
 @SpringBootApplication
+@EnableFeignClients
 public class ApiGatewayApplication {
 
     public static void main(String[] args) {

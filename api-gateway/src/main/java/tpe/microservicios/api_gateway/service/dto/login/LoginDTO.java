@@ -9,13 +9,13 @@ public class LoginDTO {
 
     @NotNull( message = "El usuario es un campo requerido." )
     @NotEmpty( message = "El usuario es un campo requerido." )
-    private String username;
+    private String email;
 
     @NotNull( message = "La contraseña es un campo requerido." )
     @NotEmpty( message = "La contraseña es un campo requerido." )
     private String password;
 
     public String toString(){
-        return "Username: " + username + ", Password: [FORBIDDEN] ";
+        return "Username: " + email + ", Password: [FORBIDDEN] ";
     }
 }

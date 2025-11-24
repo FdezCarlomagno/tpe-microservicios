@@ -12,7 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import tpe.microservicios.api_gateway.security.AuthotityConstant;
+import tpe.microservicios.api_gateway.security.AuthorityConstant;
 import tpe.microservicios.api_gateway.security.jwt.TokenProvider;
 import tpe.microservicios.api_gateway.security.jwt.JwtFilter;
 
@@ -41,15 +41,18 @@ public class SecurityConfig {
                         // Endpoints de autenticación
                         .requestMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+                        .requestMatchers("/api/monopatines/**").permitAll()
+                        .requestMatchers("/api/accounts/**").permitAll()
+                        .requestMatchers("/api/paradas/**").permitAll()
+                        .requestMatchers("/api/viajes/**").permitAll()
+
+
 
                         // Endpoints de microservicios según tu lista
 
-                        .requestMatchers("/api/accounts/**").hasAuthority(AuthotityConstant._ADMIN)
-                        .requestMatchers("/api/monopatines/**").hasAuthority(AuthotityConstant._USUARIO)
-                        .requestMatchers("/api/paradas/**").hasAuthority(AuthotityConstant._USUARIO)
-                        .requestMatchers("/api/admin/**").hasAuthority(AuthotityConstant._ADMIN)
-                        .requestMatchers("/api/viajes/**").hasAuthority(AuthotityConstant._USUARIO)
-                        .requestMatchers("/api/reportes/**").hasAuthority(AuthotityConstant._ADMIN)
+
+                        .requestMatchers("/api/admin/**").hasAuthority(AuthorityConstant._ADMIN)
+                        .requestMatchers("/api/reportes/**").hasAuthority(AuthorityConstant._ADMIN)
 
                         // Cualquier otro endpoint requiere autenticación
                         .anyRequest().authenticated()

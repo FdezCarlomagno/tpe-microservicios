@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tpe.microservicios.admin_service.clients.*;
+import tpe.microservicios.admin_service.repository.AdminRepository;
+import tpe.microservicios.admin_service.service.dto.request.LoginDTO;
 import tpe.microservicios.admin_service.service.dto.request.MonopatinRequestDTO;
 import tpe.microservicios.admin_service.service.dto.request.ParadaRequestDTO;
 import tpe.microservicios.admin_service.service.dto.request.TarifaRequestDTO;
@@ -23,6 +25,7 @@ public class AdministradorService {
     private final AccountClient accountClient;
     private final ViajesClient  viajesClient;
     private final ParadaClient paradaClient;
+    private final AdminRepository adminRepository;
 
     public List<MonopatinResponseDTO> listarMonopatines(){
         return  monopatinClient.listarMonopatines();
@@ -78,6 +81,9 @@ public class AdministradorService {
         var request = new TarifaRequestDTO();
         request.setValor(nuevoValor);
         viajesClient.actualizarTarifa(tipo, request);
+    }
+    public boolean login(LoginDTO credenciales){
+        return adminRepository.existsByEmailAndPassword((credenciales.getEmail()), credenciales.getPassword());
     }
 
 }
