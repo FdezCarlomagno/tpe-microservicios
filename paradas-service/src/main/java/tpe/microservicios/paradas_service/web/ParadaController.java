@@ -57,11 +57,7 @@ public class ParadaController {
     public ResponseEntity<ParadaResponseDTO> getParadaById(
             @Parameter(description = "ID de la parada", example = "4")
             @PathVariable("id") long id){
-        ParadaResponseDTO paradaResponseDTO = paradasService.getParadaById(id);
-        if (paradaResponseDTO == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(paradaResponseDTO);
+        return ResponseEntity.ok(paradasService.getParadaById(id));
     }
 
     @Operation(
@@ -96,11 +92,7 @@ public class ParadaController {
     public ResponseEntity<ParadaResponseDTO> updateParada(
             @PathVariable("id") long id,
             @RequestBody @Valid ParadaRequestDTO parada){
-        ParadaResponseDTO p = paradasService.updateParada(id, parada);
-        if (p == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(p);
+        return ResponseEntity.ok(paradasService.updateParada(id, parada));
     }
 
 
@@ -142,11 +134,7 @@ public class ParadaController {
     })
     @PutMapping("/{id}/ubicar-monopatin")
     public ResponseEntity<MonopatinParadaDTO> ubicarMonopatinEnParada(@PathVariable("id") Long idParada, @RequestBody @Valid Long idMonopatin){
-        MonopatinParadaDTO m = paradasService.ubicarMonopatinEnParada(idParada, idMonopatin);
-        if (m == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(m);
+        return ResponseEntity.ok(paradasService.ubicarMonopatinEnParada(idParada, idMonopatin));
     }
 
     @Operation(
@@ -164,12 +152,8 @@ public class ParadaController {
             )
     })
     @PutMapping("/{id}/remover-monopatin")
-    public ResponseEntity<MonopatinParadaDTO> removerMopatinDeParada(@PathVariable("id") Long idParada, @RequestBody @Valid Long idMonopatin){
-        MonopatinParadaDTO m = paradasService.removerMonopatinDeParada(idParada, idMonopatin);
-        if (m == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(m);
+    public ResponseEntity<MonopatinParadaDTO> removerMonopatinDeParada(@PathVariable("id") Long idParada, @RequestBody @Valid Long idMonopatin){
+        return ResponseEntity.ok(paradasService.removerMonopatinDeParada(idParada, idMonopatin));
     }
 
     @Operation(

@@ -27,6 +27,19 @@ public class ViajeController {
     private final ViajeService viajeService;
 
     // ============================================================
+    // GET VIAJES
+    // ============================================================
+    @Operation(
+            summary = "Obtener todos los viajes",
+            description = "Retorna los datos de todos los viajes del sistema."
+    )
+    @ApiResponse(responseCode = "200", description = "Viaje encontrado")
+    @GetMapping
+    public ResponseEntity<List<ViajeResponseDTO>> getViajes() {
+        return ResponseEntity.ok(viajeService.getViajes());
+    }
+
+    // ============================================================
     // GET VIAJE POR ID
     // ============================================================
     @Operation(
@@ -41,7 +54,7 @@ public class ViajeController {
     @GetMapping("/{id}")
     public ResponseEntity<ViajeResponseDTO> getViajeById(
             @Parameter(name = "id", description = "ID del viaje", required = true)
-            @PathVariable Long id
+            @PathVariable("id") Long id
     ) {
         return ResponseEntity.ok(viajeService.getViajeById(id));
     }
@@ -81,7 +94,7 @@ public class ViajeController {
     @PutMapping("/{id}/finalizar")
     public ResponseEntity<ViajeResponseDTO> finalizarViaje(
             @Parameter(name = "id", description = "ID del viaje a finalizar", required = true)
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestBody FinalizarViajeDTO viaje
     ) {
         return ResponseEntity.ok(viajeService.finalizarViaje(id, viaje));
@@ -103,10 +116,9 @@ public class ViajeController {
     @PutMapping("/{id}/pausar")
     public ResponseEntity<ViajeResponseDTO> pausarViaje(
             @Parameter(name = "id", description = "ID del viaje", required = true)
-            @PathVariable Long id,
-            @RequestBody PausarViajeDTO pausarViajeDTO
+            @PathVariable("id") Long id
     ) {
-        return ResponseEntity.ok(viajeService.pausarViaje(id, pausarViajeDTO.idAccount()));
+        return ResponseEntity.ok(viajeService.pausarViaje(id));
     }
 
     // ============================================================
@@ -125,10 +137,9 @@ public class ViajeController {
     @PutMapping("/{id}/reanudar")
     public ResponseEntity<ViajeResponseDTO> reanudarViaje(
             @Parameter(name = "id", description = "ID del viaje", required = true)
-            @PathVariable Long id,
-            @RequestBody PausarViajeDTO pausarViajeDTO
+            @PathVariable("id") Long id
     ) {
-        return ResponseEntity.ok(viajeService.reanudarViaje(id, pausarViajeDTO.idAccount()));
+        return ResponseEntity.ok(viajeService.reanudarViaje(id));
     }
 
     // ============================================================
@@ -145,7 +156,7 @@ public class ViajeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteViaje(
             @Parameter(name = "id", description = "ID del viaje", required = true)
-            @PathVariable Long id
+            @PathVariable("id") Long id
     ) {
         viajeService.deleteViaje(id);
         return ResponseEntity.ok("Viaje eliminado correctamente");
@@ -184,9 +195,9 @@ public class ViajeController {
     @GetMapping("/reportes/total-facturado")
     public ResponseEntity<Float> getTotalFacturado(
             @Parameter(name = "anio", required = true, description = "Año")
-            @RequestParam int anio,
+            @RequestParam(name = "anio") int anio,
             @Parameter(name = "mesInicio", required = true, description = "Mes inicial (1–12)")
-            @RequestParam int mesInicio,
+            @RequestParam(name = "mesInicio") int mesInicio,
             @Parameter(name = "mesFin", required = true, description = "Mes final (1–12)")
             @RequestParam int mesFin
     ) {
@@ -206,11 +217,11 @@ public class ViajeController {
     @GetMapping("/reportes/usuarios-mas-activos")
     public ResponseEntity<List<UserUsageDTO>> getUsuariosMasActivos(
             @Parameter(name = "tipoUsuario", required = true, description = "Tipo de usuario (ADMIN, NORMAL, etc.)")
-            @RequestParam String tipoUsuario,
+            @RequestParam(name = "tipoUsuario") String tipoUsuario,
             @Parameter(name = "fechaInicio", required = true, description = "Fecha inicio (AAAA-MM-DD)")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam(name = "fechaInicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @Parameter(name = "fechaFin", required = true, description = "Fecha fin (AAAA-MM-DD)")
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin
+            @RequestParam(name = "fechaFin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin
     ) {
         return ResponseEntity.ok(viajeService.getUsuariosMasActivosPorTipo(fechaInicio, fechaFin, tipoUsuario));
     }
@@ -228,13 +239,13 @@ public class ViajeController {
     @GetMapping("/reportes/uso")
     public ResponseEntity<KmRecorridosDTO> getUsoMonopatines(
             @Parameter(name = "idUserAccount", description = "ID del usuario", required = true)
-            @RequestParam Long idUserAccount,
+            @RequestParam(name = "idUserAccount") Long idUserAccount,
             @Parameter(name = "fechaInicio", description = "Fecha inicio (AAAA-MM-DD)", required = true)
-            @RequestParam LocalDate fechaInicio,
+            @RequestParam(name = "fechaInicio") LocalDate fechaInicio,
             @Parameter(name = "fechaFin", description = "Fecha fin (AAAA-MM-DD)", required = true)
             @RequestParam LocalDate fechaFin,
             @Parameter(name = "incluirRelacionados", description = "Incluir cuentas relacionadas (true/false)")
-            @RequestParam(defaultValue = "false") boolean incluirRelacionados
+            @RequestParam(name = "incluirRelacionados", defaultValue = "false") boolean incluirRelacionados
     ) {
         return ResponseEntity.ok(viajeService.getUsoMonopatines(idUserAccount, fechaInicio, fechaFin, incluirRelacionados));
     }

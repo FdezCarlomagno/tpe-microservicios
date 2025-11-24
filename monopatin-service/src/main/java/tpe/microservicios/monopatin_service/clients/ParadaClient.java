@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import tpe.microservicios.monopatin_service.service.dto.response.MonopatinParadaDTO;
 import tpe.microservicios.monopatin_service.service.dto.response.MonopatinResponseDTO;
 import tpe.microservicios.monopatin_service.service.dto.response.ParadaResponseDTO;
 
@@ -15,7 +16,7 @@ public interface ParadaClient {
     ParadaResponseDTO getParadaById(@PathVariable("id") Long id);
 
     @PutMapping("/{id}/ubicar-monopatin")
-    MonopatinResponseDTO ubicarMonopatinEnParada(
+    MonopatinParadaDTO ubicarMonopatinEnParada(
             @PathVariable("id") Long id,
             @RequestBody Long idMonopatin
     );

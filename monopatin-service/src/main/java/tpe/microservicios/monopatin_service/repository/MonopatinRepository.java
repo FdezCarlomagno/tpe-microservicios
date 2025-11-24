@@ -12,4 +12,7 @@ public interface MonopatinRepository extends JpaRepository<Monopatin, Long> {
 
     @Query("SELECT m FROM Monopatin m WHERE m.estado=ACTIVADO")
     List<Monopatin> findAllDisponibles();
+
+    @Query("SELECT DISTINCT m FROM Monopatin m WHERE m.idParada = :idParada")
+    List<Monopatin> findMonopatinesByParada(Long idParada);
 }

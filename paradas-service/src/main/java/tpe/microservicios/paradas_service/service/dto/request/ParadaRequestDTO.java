@@ -10,7 +10,6 @@ import java.util.List;
 public record ParadaRequestDTO(
          String nombreParada,
          String descripcionParada,
-         String direccionParada,
-         List<Long>idMonopatines
+         String direccionParada
 ) {
 }

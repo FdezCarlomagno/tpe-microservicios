@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import tpe.microservicios.monopatin_service.clients.ParadaClient;
 import tpe.microservicios.monopatin_service.domain.Monopatin;
 import tpe.microservicios.monopatin_service.exceptions.BadRequestException;
+import tpe.microservicios.monopatin_service.exceptions.ConflictException;
 import tpe.microservicios.monopatin_service.exceptions.NotFoundException;
 import tpe.microservicios.monopatin_service.repository.MonopatinRepository;
 import tpe.microservicios.monopatin_service.service.dto.request.MonopatinRequestDTO;
@@ -164,7 +165,11 @@ public class MonopatinService {
         // Validar que no esté en uso (disponible = false significa en uso)
         if (!monopatin.getDisponible()) {
             log.warn("Intentando eliminar monopatín {} que está en uso", id);
-            // Podrías decidir si permitir esto o no
+            throw new ConflictException("Intentando eliminar monopatin que esta en uso");
+        }
+
+        if (monopatin.getIdParada() != null) {
+            throw new ConflictException("Intentando eliminar monopatin que esta asignado a una parada");
         }
 
         monopatinRepository.deleteById(id);
@@ -260,7 +265,7 @@ public class MonopatinService {
         );
     }
 
-    public MonopatinResponseDTO removerParada(Long idMonopatin) {
+    public MonopatinResponseDTO removerDeParada(Long idMonopatin) {
 
         if (idMonopatin == null || idMonopatin <= 0) {
             throw new BadRequestException("ID de monopatín inválido: " + idMonopatin);
@@ -280,6 +285,26 @@ public class MonopatinService {
         );
     }
 
+    public List<MonopatinResponseDTO> findMonopatinesByParada(Long idParada) {
+        var parada = paradaClient.getParadaById(idParada);
+        if (parada == null) {
+            throw new NotFoundException("Parada no encontrada: " + idParada);
+        }
+
+        List<Monopatin> monopatines = monopatinRepository.findMonopatinesByParada(idParada);
+
+        return monopatines.stream()
+                .map(monopatin -> {
+                    String nombreParada = obtenerNombreParadaSeguro(monopatin.getIdParada());
+                    return new MonopatinResponseDTO(
+                            monopatin.getId(),
+                            nombreParada,
+                            monopatin.getDisponible(),
+                            monopatin.getEstado()
+                    );
+                })
+                .toList();
+    }
 
     public MonopatinResponseDTO activarMonopatin(Long idMonopatin) {
         // Validación de entrada

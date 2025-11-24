@@ -46,7 +46,6 @@ public class Parada {
         this.descripcionParada = parada.descripcionParada();
         this.nombreParada = parada.nombreParada();
         this.direccionParada = parada.direccionParada();
-        this.idMonopatines = parada.idMonopatines();
     }
 
 
@@ -60,9 +59,12 @@ public class Parada {
         );
     }
 
+    /**
+     * ESTO ROMPIA TODO
+     * */
+    /*
     public ArrayList<Long> getIdMonopatines(){
         return new ArrayList<>(this.idMonopatines);
-    }
-
+    }*/
 
 }

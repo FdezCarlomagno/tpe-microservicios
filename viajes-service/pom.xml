@@ -79,6 +79,10 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+
+                    <!-- NECESARIO PARA QUE SPRING LEA LOS NOMBRES DE PARÁMETROS -->
+                    <parameters>true</parameters>
+
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

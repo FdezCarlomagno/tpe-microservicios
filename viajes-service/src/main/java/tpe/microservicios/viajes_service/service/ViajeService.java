@@ -55,7 +55,7 @@ public class ViajeService {
             throw new NotFoundException("Parada origen not found");
         }
 
-        Viaje v = viajeRepository.save(new Viaje(new ViajeRequestDTO(account.idAccount(), monopatin.id(), parada.id())));
+        Viaje v = viajeRepository.save(new Viaje(new ViajeRequestDTO(monopatin.id(), account.idAccount(), parada.id())));
 
         return convertToViajeResponseDTO(v);
     }
@@ -119,19 +119,11 @@ public class ViajeService {
         return tarifaService.calcularCosto(inicio, fin, viaje.getPausas().size() * 5L);
     }
 
-    public ViajeResponseDTO pausarViaje(Long viajeId, float idAccount){
-        AccountResponseDTO account = accountClient.getAccountById(viajeId);
-        if (account == null) {
-            throw new NotFoundException("User account not found");
-        }
+    public ViajeResponseDTO pausarViaje(Long viajeId){
+        Viaje viaje = viajeRepository.findById(viajeId).orElseThrow(() -> new NotFoundException("Viaje not found"));
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
+        if (viaje.getIdUserAccount() != null && accountClient.isCuentaAnulada(viaje.getIdUserAccount()).cuentaAnulada()){
             throw new ForbiddenException("Cuenta anulada");
-        }
-
-        Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
-        if (viaje == null) {
-            throw new NotFoundException("Viaje not found");
         }
 
         if(viaje.getEstado() == EstadoViaje.PAUSA) throw new ConflictException("El viaje actual esta en pausa");
@@ -142,19 +134,11 @@ public class ViajeService {
         return convertToViajeResponseDTO(viaje);
     }
 
-    public ViajeResponseDTO reanudarViaje(Long viajeId, float idAccount){
-        AccountResponseDTO account = accountClient.getAccountById(viajeId);
-        if (account == null) {
-            throw new NotFoundException("User account not found");
-        }
+    public ViajeResponseDTO reanudarViaje(Long viajeId){
+        Viaje viaje = viajeRepository.findById(viajeId).orElseThrow(() ->  new NotFoundException("Viaje not found"));
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
+        if (viaje.getIdUserAccount() != null && accountClient.isCuentaAnulada(viaje.getIdUserAccount()).cuentaAnulada()){
             throw new ForbiddenException("Cuenta anulada");
-        }
-
-        Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
-        if (viaje == null) {
-            throw new NotFoundException("Viaje not found");
         }
 
         if(viaje.getEstado() != EstadoViaje.PAUSA) throw new ConflictException("El viaje actual no esta en pausa");
@@ -175,25 +159,24 @@ public class ViajeService {
        return convertToViajeResponseDTO(v);
     }
 
-    public ViajeResponseDTO finalizarViaje(Long viajeId, FinalizarViajeDTO viajeDTO) {
-        AccountResponseDTO account = accountClient.getAccountById(viajeDTO.idUserAccount());
-        if (account == null) {
-            throw new NotFoundException("User account not found");
-        }
+    public List<ViajeResponseDTO> getViajes(){
+        return viajeRepository.findAll().stream().map(this::convertToViajeResponseDTO).toList();
+    }
 
-        if (accountClient.isCuentaAnulada(account.idAccount()).cuentaAnulada()){
-            throw new ForbiddenException("Cuenta anulada");
-        }
+    public ViajeResponseDTO finalizarViaje(Long viajeId, FinalizarViajeDTO viajeDTO) {
 
         ParadaResponseDTO parada = paradasClient.getParadaById(viajeDTO.idParadaDestino());
         if (parada == null) {
             throw new NotFoundException("Parada destino not found");
         }
 
-        Viaje viaje = viajeRepository.findById(viajeId).orElse(null);
-        if (viaje == null) {
-            throw new NotFoundException("Viaje not found");
+        Viaje viaje = viajeRepository.findById(viajeId).orElseThrow(() ->  new NotFoundException("Viaje not found"));
+
+        if (viaje.getIdUserAccount() != null && accountClient.isCuentaAnulada(viaje.getIdUserAccount()).cuentaAnulada()){
+            throw new ForbiddenException("Cuenta anulada");
         }
+
+        var account = accountClient.getAccountById(viaje.getIdUserAccount());
 
         viaje.finalizar(viajeDTO.idParadaDestino(), viajeDTO.kilometros(), 0);
         float costo = this.calcularCostoViaje(viaje);
@@ -203,7 +186,7 @@ public class ViajeService {
             throw new BadRequestException("Saldo insuficiente para pagar el viaje");
         }
 
-        accountClient.updateSaldo(viajeDTO.idUserAccount(), account.saldo() - costo);
+        accountClient.updateSaldo(account.idAccount(), account.saldo() - costo);
 
         viajeRepository.save(viaje);
 

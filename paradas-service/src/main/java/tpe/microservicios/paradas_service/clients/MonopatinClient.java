@@ -13,7 +13,8 @@ public interface MonopatinClient {
     @PutMapping("/parada/{id}")
     MonopatinResponseDTO registrarMonopatinParada(@PathVariable("id") Long id,
                                                   @RequestBody Long idParada);
-    @PatchMapping("/{id}/remover-parada")
+
+    @PutMapping("/{id}/remover-parada")
     MonopatinResponseDTO removerParada(@PathVariable("id") Long id);
 }
 

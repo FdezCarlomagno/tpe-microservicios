@@ -129,8 +129,7 @@ public class MonopatinController {
         return ResponseEntity.noContent().build();
     }
 
-    // NO funciona --> hacerlo desde el lado de parada
-    /*@PutMapping("/parada/{id}")
+    @PutMapping("/parada/{id}")
     @Operation(summary = "Actualizar parada de un monopatín")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Actualizado correctamente"),
@@ -144,19 +143,27 @@ public class MonopatinController {
             @RequestBody Long idParada) {
 
         return ResponseEntity.ok(monopatinService.actualizarParada(idParada, id));
-    }*/
+    }
 
-    /*@PatchMapping("/{id}/remover-parada")
+    @GetMapping("/paradas/{id}")
+    public ResponseEntity<List<MonopatinResponseDTO>> findMonopatinesByParada(
+            @Parameter(description = "ID de la parada", example = "5")
+            @PathVariable("id") Long idParada
+    ){
+        return ResponseEntity.ok(monopatinService.findMonopatinesByParada(idParada));
+    }
+
+    @PutMapping("/{id}/remover-parada")
     @Operation(summary = "Remueve la parada asignada a un monopatín")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Parada removida"),
             @ApiResponse(responseCode = "404", description = "No encontrado")
     })
-    public ResponseEntity<MonopatinResponseDTO> removerParada(
+    public ResponseEntity<MonopatinResponseDTO> removerMonopatinDeParada(
             @PathVariable("id") Long id) {
 
-        return ResponseEntity.ok(monopatinService.removerParada(id));
-    }*/
+        return ResponseEntity.ok(monopatinService.removerDeParada(id));
+    }
 
 
     // ---------------------------------------------------------

@@ -7,7 +7,7 @@ public record AccountResponseDTO(
         Long idAccount,
         AccountType type,
         float saldo,
-        List<Long> idUsers,
+        List<String> idUsers,
         boolean cuentaAnulada
 ) {
 }
